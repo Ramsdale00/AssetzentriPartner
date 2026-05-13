@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AssetZentri Partner Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A2733;
+    --ink-2: #2D3B49;
+    --ink-3: #4A5868;
+    --cream: #F4F6F8;
+    --cream-2: #E8ECF0;
+    --paper: #FFFFFF;
+    --line: #E2E6EB;
+    --line-2: #CDD3DB;
+    --teal: #0F8B8B;
+    --teal-deep: #0A6868;
+    --rust: #B8542A;
+    --gold: #C99536;
+    --moss: #4A6B3A;
+    --muted: #6B7785;
+    --danger: #A8392B;
+    --sidebar-bg: #FBFCFD;
+    --sidebar-hover: #F1F4F7;
+    --sidebar-active: #E8ECF0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter Tight', -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .display { font-family: 'Fraunces', serif; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* === Buttons === */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; font-size: 13px; font-weight: 500;
+    border-radius: 6px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s; border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--ink); color: white; border-color: var(--ink); }
+  .btn-primary:hover { background: var(--ink-2); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink-3); background: var(--cream); }
+  .btn-accent { background: var(--teal); color: white; border-color: var(--teal); }
+  .btn-accent:hover { background: var(--teal-deep); }
+  .btn-icon {
+    background: transparent; border: none; cursor: pointer;
+    padding: 6px; color: var(--muted); border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-icon:hover { background: var(--cream); color: var(--ink); }
+
+  /* === Inputs === */
+  .input {
+    width: 100%; padding: 9px 12px; font-size: 13px;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: white; font-family: inherit; color: var(--ink);
+    transition: border-color 0.15s;
+  }
+  .input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(26, 39, 51, 0.08); }
+  textarea.input { resize: vertical; min-height: 80px; }
+  label.field-label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--ink); margin-bottom: 6px;
+  }
+  .req { color: var(--rust); }
+
+  /* === Card === */
+  .card { background: white; border: 1px solid var(--line); border-radius: 10px; }
+
+  /* === Pills === */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; font-size: 11px; font-weight: 500;
+    border-radius: 999px; border: 1px solid; white-space: nowrap;
+  }
+  .pill-Registered { background: #F4F4EE; color: var(--ink-3); border-color: var(--line); }
+  .pill-Qualified { background: #EAF1E8; color: var(--moss); border-color: #B5C9AC; }
+  .pill-Demo { background: #FDF2E0; color: var(--gold); border-color: #E8C892; }
+  .pill-Proposal { background: #FCE9DC; color: var(--rust); border-color: #E8B496; }
+  .pill-Legal { background: #E8E3D2; color: #6B5D2A; border-color: #C9BFA8; }
+  .pill-Won { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .pill-Lost { background: #F5DCD6; color: var(--danger); border-color: #D9A89E; }
+
+  /* === Sidebar nav === */
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 14px; font-size: 13px; color: var(--ink-3);
+    border-radius: 7px; cursor: pointer; transition: all 0.12s;
+    font-weight: 500;
+  }
+  .nav-item:hover { background: var(--sidebar-hover); color: var(--ink); }
+  .nav-item.active { background: var(--sidebar-active); color: var(--ink); font-weight: 600; position: relative; }
+  .nav-item.active::before {
+    content: ''; width: 3px; height: 14px; background: var(--teal);
+    border-radius: 2px; margin-left: -11px; margin-right: 8px;
+  }
+  .nav-item .badge {
+    margin-left: auto; background: var(--rust); color: white;
+    font-size: 10px; padding: 1px 7px; border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* === Tables === */
+  table.data-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .data-table th {
+    text-align: left; padding: 11px 16px; font-size: 11px;
+    font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; border-bottom: 1px solid var(--line);
+    background: #FAFBFC;
+  }
+  .data-table td {
+    padding: 14px 16px; border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .data-table tr.clickable { cursor: pointer; }
+  .data-table tr.clickable:hover td { background: var(--cream); }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* === Modal === */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 39, 51, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 100; display: flex; align-items: center; justify-content: center;
+    padding: 24px; animation: fadeIn 0.2s;
+  }
+  .modal {
+    background: var(--paper); border-radius: 12px; width: 100%;
+    max-width: 640px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(26, 39, 51, 0.25);
+  }
+  .modal-head {
+    padding: 22px 28px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-body { padding: 28px; }
+  .modal-foot {
+    padding: 18px 28px; border-top: 1px solid var(--line);
+    display: flex; gap: 10px; justify-content: flex-end;
+    background: #FAFBFC; border-radius: 0 0 12px 12px;
+  }
+
+  /* === Animations === */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s cubic-bezier(0.2, 0, 0, 1) both; }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+  /* === Scrollbar === */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--line-2); }
+
+  /* === Login page === */
+  .login-page {
+    min-height: 100vh; display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--paper);
+  }
+  @media (max-width: 880px) {
+    .login-page { grid-template-columns: 1fr; }
+    .login-pane-art { display: none !important; }
+  }
+  .login-pane-form {
+    display: flex; align-items: center; justify-content: center;
+    padding: 48px;
+  }
+  .login-pane-art {
+    background: var(--ink);
+    color: white; padding: 48px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .login-pane-art::before {
+    content: ''; position: absolute;
+    top: -50%; right: -30%; width: 800px; height: 800px;
+    background: radial-gradient(circle, var(--teal) 0%, transparent 70%);
+    opacity: 0.18;
+  }
+  .login-pane-art::after {
+    content: ''; position: absolute;
+    bottom: -40%; left: -20%; width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+    opacity: 0.10;
+  }
+  .login-form { max-width: 380px; width: 100%; }
+  .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+  .login-logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--ink); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    font-family: 'Fraunces', serif;
+  }
+  .login-credentials {
+    background: #FFF8E8; border: 1px solid #E8D8A0;
+    border-radius: 8px; padding: 14px 16px; margin-top: 16px;
+    font-size: 12px; position: relative; z-index: 1;
+  }
+  .login-credentials-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    font-weight: 600; color: #7A5F00; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .login-credentials .row {
+    display: flex; justify-content: space-between; margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--ink);
+  }
+  .login-credentials .row:last-child { margin-bottom: 0; }
+  .login-credentials .clickable-cred {
+    cursor: pointer; padding: 4px 0; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .login-credentials .clickable-cred:hover { background: rgba(0,0,0,0.04); padding: 4px 6px; margin: 0 -6px; }
+
+  .quote-block {
+    position: relative; z-index: 1;
+    font-family: 'Fraunces', serif; font-size: 32px;
+    line-height: 1.2; font-weight: 400; letter-spacing: -0.02em;
+    max-width: 440px;
+  }
+  .quote-block::before {
+    content: '\u201C'; display: block; font-size: 80px;
+    line-height: 0.8; opacity: 0.4; margin-bottom: 16px;
+  }
+  .quote-byline {
+    margin-top: 24px; font-family: 'Inter Tight', sans-serif;
+    font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 500;
+  }
+  .art-footer {
+    position: relative; z-index: 1;
+    display: flex; gap: 32px;
+    font-size: 12px; color: rgba(255,255,255,0.7);
+  }
+  .art-footer .stat-num { color: white; font-weight: 600; font-size: 20px; font-family: 'JetBrains Mono', monospace; display: block; margin-bottom: 2px;}
+
+  /* === Generic === */
+  .empty-state {
+    padding: 48px 22px; text-align: center;
+    color: var(--muted); font-size: 14px;
+  }
+  .stage-tracker {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .stage-btn {
+    padding: 4px 10px; font-size: 11px; font-weight: 500;
+    border: 1px solid var(--line); background: white; cursor: pointer;
+    border-radius: 999px; transition: all 0.15s; font-family: inherit;
+    color: var(--ink-3);
+  }
+  .stage-btn:hover { border-color: var(--ink-3); }
+  .stage-btn.current {
+    border-color: var(--ink); background: var(--ink); color: white;
+    font-weight: 600;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--ink); color: white;
+    padding: 12px 18px; border-radius: 8px;
+    font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 200; animation: fadeUp 0.3s;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  /* === Search trigger in sidebar === */
+  .search-trigger {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; margin-bottom: 14px;
+    background: white; border: 1px solid var(--line);
+    border-radius: 7px; cursor: pointer; font-family: inherit;
+    font-size: 13px; color: var(--ink-3);
+    transition: all 0.15s;
+  }
+  .search-trigger:hover { border-color: var(--line-2); background: var(--cream); }
+  .kbd {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* === Search modal === */
+  .search-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 39, 51, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 110;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 80px 24px 24px 24px;
+    animation: fadeIn 0.15s;
+  }
+  .search-modal {
+    background: var(--paper); border-radius: 12px;
+    width: 100%; max-width: 600px; max-height: 70vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 64px rgba(26, 39, 51, 0.3);
+    overflow: hidden;
+  }
+  .search-input-wrap {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .search-input-wrap .search-icon { color: var(--muted); }
+  .search-input {
+    flex: 1; border: none; outline: none;
+    font-size: 16px; font-family: inherit; color: var(--ink);
+    background: transparent;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results {
+    flex: 1; overflow-y: auto; padding: 8px 0;
+  }
+  .search-group {
+    padding: 4px 0 8px 0;
+  }
+  .search-group-label {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted);
+    font-weight: 600; padding: 8px 20px;
+  }
+  .search-result {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 20px; cursor: pointer;
+    transition: background 0.1s;
+    border-left: 2px solid transparent;
+  }
+  .search-result:hover, .search-result.highlighted {
+    background: var(--cream);
+    border-left-color: var(--ink);
+  }
+  .search-result-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--cream);
+    color: var(--ink-3);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .search-result.highlighted .search-result-icon {
+    background: var(--ink); color: white;
+  }
+  .search-result-content { flex: 1; min-width: 0; }
+  .search-result-title {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .search-result-meta {
+    font-size: 11px; color: var(--muted);
+    margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .search-result-action {
+    font-size: 11px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .search-footer {
+    padding: 10px 20px;
+    border-top: 1px solid var(--line);
+    background: #FAFBFC;
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted);
+  }
+  .search-footer .kbd { font-size: 9px; }
+  .search-empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--muted); font-size: 13px;
+  }
+  mark.match {
+    background: #FFF1B8;
+    color: var(--ink);
+    padding: 1px 0;
+    font-weight: 600;
+    border-radius: 2px;
+  }
+
+  /* Icons via inline SVG sizing */
+  .icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .icon-sm { width: 14px; height: 14px; flex-shrink: 0; }
+  .icon-lg { width: 22px; height: 22px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   ICON LIBRARY — inline SVG sprites
+   ============================================================ */
+const I = {
+  dashboard: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+  check: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  checkSquare: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  hash: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+  folder: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  users: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  chart: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  plus: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  arrowRight: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+  arrowLeft: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+  shield: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  alert: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  checkCircle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  download: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  megaphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  refresh: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  zap: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  send: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  logOut: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  building: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+  mail: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+  mapPin: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  calendar: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  fileText: '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+};
+
+/* ============================================================
+   USERS — login credentials
+   ============================================================ */
+const USERS = {
+  'alex@northwave-tech.com': {
+    password: 'partner',
+    name: 'Alex Morgan',
+    role: 'Partner Admin',
+    persona: 'partner',
+    partnerName: 'Northwave Technologies',
+    partnerTier: 'Gold',
+  },
+  'ops@vistrive.com': {
+    password: 'admin',
+    name: 'Riya Chen',
+    role: 'Vistrive Partner Ops',
+    persona: 'admin',
+  },
+};
+
+/* ============================================================
+   MOCK DATA — seeds the partner's portal state
+   ============================================================ */
+const SEED_CHECKLIST = [
+  { id: 1, title: 'Company profile', desc: 'Confirm legal name, country, primary contact, billing email', done: true },
+  { id: 2, title: 'Upload company logo', desc: 'PNG or SVG, used on co-branded one-pagers', done: true },
+  { id: 3, title: 'Accept Partner Agreement', desc: 'E-signature on standard partner contract', done: true },
+  { id: 4, title: 'Add team members', desc: 'Invite at least one Admin and one Seller', done: true },
+  { id: 5, title: 'Watch demo video', desc: 'ZentriCloud 101 — 30 minute product walkthrough', done: true },
+  { id: 6, title: 'Download sales kit', desc: 'Auto-downloads the Day-One pack from Collaterals', done: false },
+  { id: 7, title: 'Pass knowledge check', desc: '10 questions, 80% pass mark, unlimited retries', done: false },
+  { id: 8, title: 'Submit territory plan', desc: 'Target geography and 5 named target accounts', done: false },
+];
+
+const SEED_DEALS = [
+  {
+    id: 'DR-1042', company: 'Northwind Industries', country: 'United Kingdom',
+    contact: 'Sarah Bellweather', email: 'sarah.b@northwind.co.uk', phone: '+44 20 7946 0123',
+    devices: 320, tier: 'Standard', closeDate: '2026-08-15', stage: 'Qualified',
+    source: 'Partner network',
+    notes: 'IT Director engaged. Pilot scope discussion on Friday. They have a Snipe-IT installation they want to replace.',
+    registered: '2026-05-02', protectionDays: 78,
+    comments: [
+      { author: 'Vistrive AE', text: 'Discovery call went well. Confirmed budget signed off in Q3.', when: '2 days ago' }
+    ]
+  },
+  {
+    id: 'DR-1056', company: 'Helio Robotics', country: 'Germany',
+    contact: 'Markus Weiss', email: 'm.weiss@helio-robotics.de', phone: '+49 89 1234567',
+    devices: 180, tier: 'Standard', closeDate: '2026-07-30', stage: 'Demo',
+    source: 'Outbound',
+    notes: 'Demo scheduled for Tuesday. CTO will attend along with IT Ops lead.',
+    registered: '2026-04-28', protectionDays: 73,
+    comments: []
+  },
+  {
+    id: 'DR-1071', company: 'Coastline Health', country: 'United Kingdom',
+    contact: 'Dr. Priya Ramachandran', email: 'p.ramach@coastline-h.nhs.uk', phone: '+44 1234 567890',
+    devices: 850, tier: 'Premium', closeDate: '2026-09-22', stage: 'Proposal',
+    source: 'Event',
+    notes: 'Pricing sent. Procurement review in progress. HIPAA + GDPR requirements confirmed. Looking at SoD module.',
+    registered: '2026-04-10', protectionDays: 58,
+    comments: [
+      { author: 'You', text: 'Customer asked about kill switch feature — confirmed Premium includes it.', when: '5 days ago' },
+      { author: 'Vistrive AE', text: 'Sending updated proposal with annual prepay discount tomorrow.', when: '3 days ago' }
+    ]
+  },
+  {
+    id: 'DR-1089', company: 'Apex Manufacturing', country: 'United States',
+    contact: 'James O\u2019Brien', email: 'jobrien@apex-mfg.com', phone: '+1 312 555 0142',
+    devices: 240, tier: 'Standard', closeDate: '2026-06-10', stage: 'Won',
+    source: 'Referral',
+    notes: 'Closed-Won at $11.5K ARR. Onboarding kickoff scheduled.',
+    registered: '2026-03-22', protectionDays: 0,
+    comments: [
+      { author: 'Vistrive AE', text: 'Contract signed. First invoice issued.', when: '3 weeks ago' }
+    ]
+  },
+];
+
+const SEED_TEAM = [
+  { id: 1, name: 'Alex Morgan', email: 'alex@northwave-tech.com', role: 'Admin', status: 'Active' },
+  { id: 2, name: 'Priya Sharma', email: 'priya@northwave-tech.com', role: 'Seller', status: 'Active' },
+  { id: 3, name: 'James Okonkwo', email: 'james@northwave-tech.com', role: 'Seller', status: 'Active' },
+  { id: 4, name: 'Mei Tanaka', email: 'mei@northwave-tech.com', role: 'Read-Only', status: 'Invited' },
+];
+
+const COLLATERALS = [
+  { folder: 'Sales Playbooks', items: [
+    { name: 'ZentriCloud Master Sales Playbook', type: 'PDF', size: '8.2 MB', updated: '12 days ago' },
+    { name: 'Discovery Question Library (40 Qs)', type: 'PDF', size: '420 KB', updated: '3 weeks ago' },
+    { name: 'Objection Handling Guide', type: 'PDF', size: '1.1 MB', updated: '1 month ago' },
+  ]},
+  { folder: 'Pricing & Tiers', items: [
+    { name: 'Subscription Tiers — Live One-Pager', type: 'PDF', size: '180 KB', updated: 'Auto-synced', mustRead: true, mustReadNote: 'Q3 pricing refresh' },
+    { name: 'Pricing Calculator', type: 'XLSX', size: '95 KB', updated: '2 weeks ago' },
+  ]},
+  { folder: 'Battlecards', items: [
+    { name: 'Battlecard — ServiceNow ITAM', type: 'PDF', size: '320 KB', updated: '8 days ago' },
+    { name: 'Battlecard — Snipe-IT', type: 'PDF', size: '280 KB', updated: '8 days ago' },
+    { name: 'Battlecard — Lansweeper', type: 'PDF', size: '290 KB', updated: '8 days ago' },
+    { name: 'Battlecard — Flexera', type: 'PDF', size: '340 KB', updated: '8 days ago' },
+    { name: 'Battlecard — Ivanti Neurons', type: 'PDF', size: '310 KB', updated: '8 days ago' },
+  ]},
+  { folder: 'Technical Documentation', items: [
+    { name: 'REST API Reference', type: 'PDF', size: '2.4 MB', updated: '1 week ago' },
+    { name: 'Integration Guide — Azure AD / Entra ID', type: 'PDF', size: '1.6 MB', updated: '2 weeks ago' },
+    { name: 'Security & Compliance Overview', type: 'PDF', size: '1.8 MB', updated: '3 weeks ago' },
+  ]},
+  { folder: 'Case Studies', items: [
+    { name: 'Case Study — Mid-market SaaS company (500 devices)', type: 'PDF', size: '720 KB', updated: '1 month ago' },
+    { name: 'Case Study — Healthcare org HIPAA compliance', type: 'PDF', size: '680 KB', updated: '2 months ago' },
+  ]},
+  { folder: 'Brand Assets', items: [
+    { name: 'AssetZentri logo lockup (SVG bundle)', type: 'ZIP', size: '2.1 MB', updated: '2 months ago' },
+    { name: 'Brand Guidelines v3', type: 'PDF', size: '4.2 MB', updated: '2 months ago' },
+  ]},
+  { folder: 'Demo Resources', items: [
+    { name: 'Sandbox Access Guide', type: 'PDF', size: '380 KB', updated: '3 weeks ago' },
+    { name: 'Demo Script — Standard Tier', type: 'PDF', size: '210 KB', updated: '3 weeks ago' },
+    { name: 'ROI Calculator', type: 'XLSX', size: '110 KB', updated: '1 month ago' },
+  ]},
+  { folder: 'Recorded Webinars', items: [
+    { name: 'Partner Briefing — AI Governance roadmap', type: 'MP4', size: '180 MB', updated: '2 weeks ago' },
+    { name: 'Q2 Product Update', type: 'MP4', size: '210 MB', updated: '1 month ago' },
+  ]},
+];
+
+const COBRAND_TEMPLATES = [
+  { id: 'overview', name: 'Solution Overview', desc: 'Top-level pitch, 1 page' },
+  { id: 'roi', name: 'ITAM ROI Story', desc: 'Cost savings + payback narrative' },
+  { id: 'compliance', name: 'Compliance & Audit Readiness', desc: 'SOC 2 / ISO / GDPR / HIPAA' },
+  { id: 'saas', name: 'SaaS Governance', desc: 'Shadow IT + spend management' },
+  { id: 'ai', name: 'AI Asset Management', desc: 'LLM tracking + AI agent governance' },
+];
+
+/* ============================================================
+   APP STATE — persisted in localStorage
+   ============================================================ */
+const STORAGE_KEY = 'zc_portal_state_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // migrations: ensure newer fields exist
+      if (!parsed.customPartners) parsed.customPartners = [];
+      if (parsed.selectedPartnerId === undefined) parsed.selectedPartnerId = null;
+      return parsed;
+    }
+  } catch (e) {}
+  return {
+    auth: null,
+    view: 'dashboard',
+    selectedDealId: null,
+    selectedPartnerId: null,
+    activeFolder: COLLATERALS[0].folder,
+    checklist: SEED_CHECKLIST,
+    deals: SEED_DEALS,
+    team: SEED_TEAM,
+    customPartners: [],
+  };
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function resetData() {
+  if (!confirm('Reset all demo data back to seeds?')) return;
+  state.checklist = JSON.parse(JSON.stringify(SEED_CHECKLIST));
+  state.deals = JSON.parse(JSON.stringify(SEED_DEALS));
+  state.team = JSON.parse(JSON.stringify(SEED_TEAM));
+  state.selectedDealId = null;
+  state.view = state.auth?.persona === 'admin' ? 'admin' : 'dashboard';
+  saveState(); render(); toast('Demo data reset to seeds.');
+}
+
+let state = loadState();
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function annualValue(deal) {
+  return deal.devices * (deal.tier === 'Premium' ? 8 : 4) * 12;
+}
+function fmtCurrency(n) {
+  if (n >= 1000) return '$' + (n / 1000).toFixed(1) + 'K';
+  return '$' + n;
+}
+function fmtCurrencyShort(n) {
+  if (n >= 1000) return '$' + Math.round(n / 1000) + 'K';
+  return '$' + n;
+}
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = I.checkCircle + '<span>' + escapeHtml(msg) + '</span>';
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2800);
+}
+function stagePillClass(stage) {
+  const map = { 'Registered':'pill-Registered','Qualified':'pill-Qualified','Demo':'pill-Demo','Proposal':'pill-Proposal','Legal':'pill-Legal','Won':'pill-Won','Lost':'pill-Lost' };
+  return map[stage] || 'pill-Registered';
+}
+function stageLabel(stage) {
+  return { 'Demo':'Demo Scheduled','Legal':'Legal Review','Won':'Closed-Won','Lost':'Closed-Lost' }[stage] || stage;
+}
+
+/* ============================================================
+   LOGIN PAGE
+   ============================================================ */
+function renderLogin() {
+  return `
+    <div class="login-page">
+      <div class="login-pane-form">
+        <div class="login-form fade-up">
+          <div class="login-logo">
+            <div class="login-logo-mark">Az</div>
+            <div>
+              <div class="display" style="font-size:18px;font-weight:600;">AssetZentri</div>
+              <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Partner Portal</div>
+            </div>
+          </div>
+
+          <h1 class="display" style="font-size:32px;font-weight:500;line-height:1.15;margin-bottom:8px;">Sign in.</h1>
+          <p style="color:var(--muted);font-size:14px;margin-bottom:32px;">Access your deals, collateral, and onboarding.</p>
+
+          <form id="login-form" onsubmit="event.preventDefault(); handleLogin();">
+            <div style="margin-bottom:14px;">
+              <label class="field-label">Email</label>
+              <input class="input" type="email" id="login-email" placeholder="you@company.com" autofocus required>
+            </div>
+            <div style="margin-bottom:18px;">
+              <label class="field-label">Password</label>
+              <input class="input" type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+            <div id="login-error" style="display:none;background:#FCE9E5;border:1px solid #E8B4A8;color:var(--danger);padding:10px 12px;border-radius:6px;font-size:12px;margin-bottom:14px;"></div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;font-size:14px;" type="submit">
+              ${I.lock} Sign in
+            </button>
+          </form>
+
+          <div class="login-credentials">
+            <div class="login-credentials-title">
+              ${I.info} Demo credentials (click to fill)
+            </div>
+            <div class="row clickable-cred" onclick="fillCreds('alex@northwave-tech.com', 'partner')">
+              <span>alex@northwave-tech.com</span><span style="color:var(--muted);">partner</span>
+            </div>
+            <div class="row clickable-cred" onclick="fillCreds('ops@vistrive.com', 'admin')">
+              <span>ops@vistrive.com</span><span style="color:var(--muted);">admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-pane-art">
+        <div></div>
+        <div class="quote-block">
+          One portal.<br>
+          Every deal.<br>
+          Zero friction.
+          <div class="quote-byline">— AssetZentri partner programme, FY2026</div>
+        </div>
+        <div class="art-footer">
+          <div><span class="stat-num">20</span>strategic partners</div>
+          <div><span class="stat-num">$4.23M</span>3-year contract value</div>
+          <div><span class="stat-num">84</span>customers by 2029</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function fillCreds(email, password) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = password;
+  document.getElementById('login-password').focus();
+}
+
+function handleLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const user = USERS[email];
+  const err = document.getElementById('login-error');
+
+  if (!user || user.password !== password) {
+    err.style.display = 'block';
+    err.textContent = 'Invalid credentials. Try the demo accounts shown below.';
+    return;
+  }
+
+  state.auth = {
+    email,
+    name: user.name,
+    role: user.role,
+    persona: user.persona,
+    partnerName: user.partnerName,
+    partnerTier: user.partnerTier,
+  };
+  state.view = user.persona === 'admin' ? 'admin' : 'dashboard';
+  saveState();
+  render();
+  toast('Welcome back, ' + user.name.split(' ')[0] + '.');
+}
+
+function handleLogout() {
+  state.auth = null;
+  state.selectedDealId = null;
+  saveState();
+  render();
+}
+
+/* ============================================================
+   SHELL — sidebar + main area
+   ============================================================ */
+function renderShell(body) {
+  const auth = state.auth;
+  const isPartner = auth.persona === 'partner';
+  const completedSteps = state.checklist.filter(c => c.done).length;
+  const stepsRemaining = 8 - completedSteps;
+
+  const partnerNav = [
+    { id: 'dashboard', label: 'Dashboard', icon: I.dashboard },
+    { id: 'onboarding', label: 'Onboarding', icon: I.checkSquare, badge: stepsRemaining > 0 ? stepsRemaining : 0 },
+    { id: 'leads', label: 'Lead Registration', icon: I.hash },
+    { id: 'collateral', label: 'Product Collaterals', icon: I.folder },
+    { id: 'team', label: 'Team', icon: I.users },
+  ];
+  const adminNav = [
+    { id: 'admin', label: 'Operations', icon: I.chart },
+    { id: 'admin-deals', label: 'All Deals', icon: I.hash },
+    { id: 'admin-partners', label: 'Partners', icon: I.users },
+  ];
+  const nav = isPartner ? partnerNav : adminNav;
+
+  return `
+    <div style="display:flex;min-height:100vh;">
+      <aside style="width:240px;background:var(--sidebar-bg);color:var(--ink);padding:24px 16px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;flex-shrink:0;border-right:1px solid var(--line);">
+        <div style="padding:6px 14px 22px 14px;border-bottom:1px solid var(--line);margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="login-logo-mark" style="width:28px;height:28px;font-size:13px;">Az</div>
+            <div>
+              <div class="display" style="font-size:18px;font-weight:600;line-height:1;">AssetZentri</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">Partner Portal</div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="openSearch()" class="search-trigger" title="Search (⌘K)">
+          ${I.search}
+          <span style="flex:1;text-align:left;color:var(--muted);">Search...</span>
+          <span class="kbd">⌘K</span>
+        </button>
+
+        ${nav.map(item => `
+          <div class="nav-item ${state.view === item.id || (item.id === 'admin-partners' && state.view === 'admin-partner-detail') ? 'active' : ''}" onclick="navigate('${item.id}')">
+            ${item.icon}
+            <span style="flex:1;">${item.label}</span>
+            ${item.badge > 0 ? `<span class="badge">${item.badge}</span>` : ''}
+          </div>
+        `).join('')}
+
+        <div style="margin-top:auto;border-top:1px solid var(--line);padding-top:14px;">
+          <div style="padding:0 4px 12px 4px;display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:${isPartner ? 'var(--gold)' : 'var(--teal)'};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">
+              ${auth.name.split(' ').map(n => n[0]).join('')}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(auth.name)}</div>
+              <div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(auth.role)}</div>
+            </div>
+          </div>
+          ${isPartner ? `
+            <div style="padding:0 4px 10px 4px;">
+              <span class="pill" style="background:transparent;color:var(--gold);border-color:var(--gold);padding:2px 7px;font-size:10px;">
+                ${I.star} GOLD PARTNER
+              </span>
+            </div>
+          ` : ''}
+          <button class="btn btn-ghost" onclick="handleLogout()" style="width:100%;justify-content:center;font-size:12px;">
+            ${I.logOut} Sign out
+          </button>
+        </div>
+      </aside>
+      <main style="flex:1;overflow-y:auto;">${body}</main>
+    </div>
+  `;
+}
+
+function navigate(view) {
+  state.view = view;
+  state.selectedDealId = null;
+  saveState();
+  render();
+  document.querySelector('main').scrollTop = 0;
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const auth = state.auth;
+  const completed = state.checklist.filter(c => c.done).length;
+  const active = state.deals.filter(d => !['Won','Lost'].includes(d.stage));
+  const won = state.deals.filter(d => d.stage === 'Won').length;
+  const pipelineValue = active.reduce((s,d) => s + annualValue(d), 0);
+  const partnerFirstName = auth.partnerName;
+
+  const subline = completed < 8
+    ? `Finish your onboarding to unlock lead registration &mdash; ${8 - completed} steps left.`
+    : `Your team has ${active.length} active deals worth ${fmtCurrencyShort(pipelineValue)} in pipeline.`;
+
+  return `
+    <div style="padding:36px;max-width:1200px;">
+      <div class="fade-up">
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:6px;">Welcome back</div>
+        <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">${escapeHtml(partnerFirstName)}.</h1>
+        <p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:560px;">${subline}</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;" class="fade-up">
+        ${statCard('Onboarding', completed + '/8', Math.round(completed/8*100) + '% complete', completed === 8 ? 'var(--moss)' : 'var(--rust)')}
+        ${statCard('Active deals', active.length, 'In pipeline', 'var(--ink)')}
+        ${statCard('Pipeline value', fmtCurrencyShort(pipelineValue), 'Annualized', 'var(--teal)')}
+        ${statCard('Closed-won', won, 'Lifetime', 'var(--gold)')}
+      </div>
+
+      <div style="margin-top:36px;display:grid;grid-template-columns:1.6fr 1fr;gap:20px;">
+        <div class="card fade-up">
+          <div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Pipeline</div>
+              <div class="display" style="font-size:20px;font-weight:500;margin-top:2px;">Your active deals</div>
+            </div>
+            <button class="btn btn-ghost" onclick="navigate('leads')">View all ${I.arrowRight}</button>
+          </div>
+          ${active.length === 0 ? `<div class="empty-state">No active deals yet. <div style="margin-top:14px;"><button class="btn btn-primary" onclick="navigate('leads')">${I.plus} Register your first lead</button></div></div>` : `
+            <table class="data-table">
+              <thead><tr><th>Deal ID</th><th>Company</th><th>Stage</th><th style="text-align:right;">Value</th></tr></thead>
+              <tbody>
+                ${active.slice(0,5).map(d => `
+                  <tr class="clickable" onclick="openDeal('${d.id}')">
+                    <td class="mono" style="font-size:12px;color:var(--muted);">${d.id}</td>
+                    <td style="font-weight:500;">${escapeHtml(d.company)}</td>
+                    <td><span class="pill ${stagePillClass(d.stage)}">${stageLabel(d.stage)}</span></td>
+                    <td class="mono" style="text-align:right;font-size:13px;">${fmtCurrency(annualValue(d))}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          ${completed < 8 ? `
+            <div class="card fade-up" style="padding:22px;background:linear-gradient(135deg, var(--cream) 0%, var(--cream-2) 100%);border-color:var(--line-2);">
+              <div style="font-size:11px;color:var(--rust);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Action required</div>
+              <div class="display" style="font-size:18px;font-weight:500;margin-top:4px;">Complete onboarding</div>
+              <div style="background:white;border-radius:6px;height:6px;margin-top:16px;overflow:hidden;">
+                <div style="background:var(--ink);height:100%;width:${(completed/8)*100}%;transition:width 0.4s;"></div>
+              </div>
+              <div style="font-size:13px;color:var(--muted);margin-top:10px;">${completed} of 8 steps complete</div>
+              <button class="btn btn-primary" style="margin-top:16px;width:100%;justify-content:center;" onclick="navigate('onboarding')">
+                Continue setup ${I.arrowRight}
+              </button>
+            </div>
+          ` : ''}
+
+          <div class="card fade-up">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--line);">
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Must-read</div>
+              <div class="display" style="font-size:18px;font-weight:500;margin-top:2px;">From Vistrive</div>
+            </div>
+            <div style="padding:22px;">
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:36px;height:36px;border-radius:8px;background:var(--rust);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  ${I.megaphone}
+                </div>
+                <div>
+                  <div style="font-weight:500;font-size:14px;">Q3 pricing refresh &mdash; live now</div>
+                  <div style="color:var(--muted);font-size:13px;margin-top:4px;line-height:1.5;">Updated subscription tiers PDF available in Pricing &amp; Tiers folder.</div>
+                  <button class="btn btn-ghost" style="margin-top:12px;" onclick="navigate('collateral'); state.activeFolder='Pricing &amp; Tiers'; saveState();">Open collateral</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function statCard(label, value, hint, accent) {
+  return `
+    <div class="card" style="padding:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:${accent};"></div>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">${label}</div>
+      <div class="display mono" style="font-size:30px;font-weight:500;margin-top:8px;line-height:1;color:${accent};">${value}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;">${hint}</div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   ONBOARDING
+   ============================================================ */
+function renderOnboarding() {
+  const completed = state.checklist.filter(c => c.done).length;
+  const pct = (completed / 8) * 100;
+
+  return `
+    <div style="padding:36px;max-width:880px;">
+      <div class="fade-up" style="margin-bottom:32px;">
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:6px;">Module 1</div>
+        <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">Get ready to sell.</h1>
+        <p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:600px;">
+          Eight steps. Complete them all to unlock lead registration. You can save and return at any time.
+        </p>
+        <div style="margin-top:28px;background:white;border:1px solid var(--line);border-radius:10px;padding:16px 22px;display:flex;align-items:center;gap:20px;">
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+              <span style="font-size:13px;font-weight:500;">Progress</span>
+              <span class="mono" style="font-size:13px;color:var(--muted);">${completed} / 8</span>
+            </div>
+            <div style="background:var(--cream);border-radius:4px;height:8px;overflow:hidden;">
+              <div style="background:${completed === 8 ? 'var(--moss)' : 'var(--ink)'};height:100%;width:${pct}%;transition:width 0.4s, background 0.4s;"></div>
+            </div>
+          </div>
+          ${completed === 8 ? `<div class="pill" style="background:var(--moss);color:white;border-color:var(--moss);">${I.checkCircle} ACTIVE PARTNER</div>` : ''}
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;" class="fade-up">
+        ${state.checklist.map((s, i) => `
+          <div class="card" style="padding:18px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.15s;background:${s.done ? 'var(--cream)' : 'white'};border-color:${s.done ? 'var(--line-2)' : 'var(--line)'};"
+               onclick="toggleStep(${s.id})"
+               onmouseenter="this.style.transform='translateX(2px)'"
+               onmouseleave="this.style.transform='translateX(0)'">
+            <div style="width:32px;height:32px;border-radius:8px;background:${s.done ? 'var(--ink)' : 'white'};color:${s.done ? 'white' : 'var(--muted)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;border:${s.done ? 'none' : '1px solid var(--line)'};transition:all 0.2s;">
+              ${s.done ? I.check : `<span class="mono" style="font-size:13px;font-weight:600;">${i+1}</span>`}
+            </div>
+            <div style="flex:1;">
+              <div style="font-weight:500;font-size:14px;text-decoration:${s.done ? 'line-through' : 'none'};color:${s.done ? 'var(--muted)' : 'var(--ink)'};">${escapeHtml(s.title)}</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px;">${escapeHtml(s.desc)}</div>
+            </div>
+            <div style="color:${s.done ? 'var(--moss)' : 'var(--muted)'};font-size:12px;font-weight:500;">${s.done ? 'Done' : 'Mark complete'}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleStep(id) {
+  const step = state.checklist.find(s => s.id === id);
+  if (step) {
+    step.done = !step.done;
+    saveState();
+    render();
+    if (state.checklist.every(s => s.done)) {
+      toast('Onboarding complete! Lead registration unlocked.');
+    }
+  }
+}
+
+/* ============================================================
+   LEADS — list + detail + register modal
+   ============================================================ */
+let leadFilter = 'All';
+let leadSearch = '';
+
+function renderLeads() {
+  if (state.selectedDealId) {
+    const deal = state.deals.find(d => d.id === state.selectedDealId);
+    if (deal) return renderDealDetail(deal);
+  }
+
+  const onboardingComplete = state.checklist.every(s => s.done);
+  const filtered = state.deals.filter(d => {
+    if (leadFilter === 'Active' && ['Won','Lost'].includes(d.stage)) return false;
+    if (leadFilter === 'Won' && d.stage !== 'Won') return false;
+    if (leadSearch && !d.company.toLowerCase().includes(leadSearch.toLowerCase())) return false;
+    return true;
+  });
+
+  return `
+    <div style="padding:36px;max-width:1200px;">
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;">
+        <div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:6px;">Module 2</div>
+          <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">Lead Registration.</h1>
+          <p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:560px;">Claim a customer. 90-day protection from the moment you submit.</p>
+        </div>
+        <button class="btn btn-primary" ${!onboardingComplete ? 'disabled title="Complete onboarding first"' : ''} onclick="openRegisterModal()">
+          ${I.plus} Register lead
+        </button>
+      </div>
+
+      ${!onboardingComplete ? `
+        <div class="card fade-up" style="padding:16px;margin-bottom:24px;background:var(--cream);border-color:var(--line-2);display:flex;gap:12px;align-items:center;">
+          <div style="color:var(--rust);">${I.alert}</div>
+          <div style="font-size:13px;">Complete onboarding to unlock lead registration. Browsing existing deals is fine in the meantime.</div>
+        </div>
+      ` : ''}
+
+      <div class="fade-up" style="display:flex;gap:12px;margin-bottom:18px;align-items:center;">
+        <div style="position:relative;flex:1;max-width:320px;">
+          <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);">${I.search}</div>
+          <input class="input" placeholder="Search by company..." value="${escapeHtml(leadSearch)}" oninput="leadSearch = this.value; renderMainOnly();" style="padding-left:34px;">
+        </div>
+        <div style="display:flex;background:var(--cream);border-radius:7px;padding:3px;gap:2px;">
+          ${['All','Active','Won'].map(f => `
+            <button onclick="leadFilter='${f}'; renderMainOnly();" style="background:${leadFilter===f ? 'white' : 'transparent'};color:${leadFilter===f ? 'var(--ink)' : 'var(--muted)'};border:none;padding:6px 14px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;${leadFilter===f ? 'box-shadow:0 1px 2px rgba(0,0,0,0.06);' : ''}">${f}</button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card fade-up">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Deal ID</th><th>Company</th><th>Country</th>
+              <th>Tier / Devices</th><th>Stage</th>
+              <th>Protection</th><th style="text-align:right;">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.length === 0 ? `<tr><td colspan="7" class="empty-state">No deals match.</td></tr>` : filtered.map(d => `
+              <tr class="clickable" onclick="openDeal('${d.id}')">
+                <td class="mono" style="font-size:12px;color:var(--muted);">${d.id}</td>
+                <td style="font-weight:500;">${escapeHtml(d.company)}</td>
+                <td style="color:var(--muted);">${escapeHtml(d.country)}</td>
+                <td><span style="font-weight:500;">${d.tier}</span> <span class="mono" style="color:var(--muted);margin-left:8px;font-size:12px;">${d.devices} devices</span></td>
+                <td><span class="pill ${stagePillClass(d.stage)}">${stageLabel(d.stage)}</span></td>
+                <td class="mono" style="font-size:12px;color:${d.protectionDays < 14 && !['Won','Lost'].includes(d.stage) ? 'var(--rust)' : 'var(--muted)'};">
+                  ${['Won','Lost'].includes(d.stage) ? '\u2014' : d.protectionDays + ' days'}
+                </td>
+                <td class="mono" style="text-align:right;font-weight:500;">${fmtCurrency(annualValue(d))}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderMainOnly() {
+  document.querySelector('main').innerHTML = renderLeads();
+}
+
+function openDeal(id) {
+  state.selectedDealId = id;
+  saveState();
+  render();
+}
+
+function renderDealDetail(deal) {
+  const value = annualValue(deal);
+  const stages = ['Registered','Qualified','Demo','Proposal','Legal','Won','Lost'];
+
+  return `
+    <div style="padding:36px;max-width:1000px;">
+      <button class="btn btn-ghost fade-up" onclick="state.selectedDealId=null;saveState();render();" style="margin-bottom:24px;">
+        ${I.arrowLeft} Back to deals
+      </button>
+
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+        <div>
+          <div class="mono" style="font-size:12px;color:var(--muted);">${deal.id}</div>
+          <h1 class="display" style="font-size:34px;font-weight:500;margin:4px 0 0 0;line-height:1.1;">${escapeHtml(deal.company)}</h1>
+          <div style="color:var(--muted);margin-top:6px;font-size:14px;">${escapeHtml(deal.country)} &middot; Registered ${deal.registered}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="mono display" style="font-size:28px;font-weight:500;">${fmtCurrency(value)}</div>
+          <div style="font-size:12px;color:var(--muted);">indicative annual value</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="card fade-up" style="padding:22px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:16px;">Pipeline stage</div>
+            <div class="stage-tracker">
+              ${stages.map(s => `
+                <button class="stage-btn ${deal.stage===s ? 'current' : ''}" onclick="updateStage('${deal.id}','${s}')">
+                  ${stageLabel(s)}
+                </button>
+              `).join('')}
+            </div>
+            <div style="margin-top:14px;font-size:12px;color:var(--muted);">Click to advance the deal. Vistrive AE is auto-notified.</div>
+          </div>
+
+          <div class="card fade-up">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--line);">
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Conversation</div>
+              <div class="display" style="font-size:18px;font-weight:500;margin-top:2px;">Notes with Vistrive</div>
+            </div>
+            <div style="padding:22px;display:flex;flex-direction:column;gap:14px;">
+              ${deal.comments.length === 0 ? `<div style="font-size:13px;color:var(--muted);font-style:italic;">No notes yet. Start a conversation.</div>` : deal.comments.map(c => `
+                <div style="display:flex;gap:12px;">
+                  <div style="width:30px;height:30px;border-radius:8px;flex-shrink:0;background:${c.author==='You' ? 'var(--ink)' : 'var(--teal)'};color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">
+                    ${c.author === 'You' ? 'Y' : 'V'}
+                  </div>
+                  <div style="flex:1;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                      <span style="font-size:13px;font-weight:500;">${escapeHtml(c.author)}</span>
+                      <span style="font-size:11px;color:var(--muted);">${escapeHtml(c.when)}</span>
+                    </div>
+                    <div style="font-size:13px;margin-top:4px;line-height:1.5;">${escapeHtml(c.text)}</div>
+                  </div>
+                </div>
+              `).join('')}
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <input class="input" id="comment-input" placeholder="Add a note..." onkeydown="if(event.key==='Enter') postComment('${deal.id}')">
+                <button class="btn btn-primary" onclick="postComment('${deal.id}')">${I.send}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up" style="padding:22px;height:fit-content;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:16px;">Deal details</div>
+          ${dealRow(I.building, 'Contact', deal.contact)}
+          ${dealRow(I.mail, 'Email', deal.email)}
+          ${dealRow(I.mapPin, 'Country', deal.country)}
+          ${dealRow(I.hash, 'Devices', deal.devices + ' \u00d7 ' + deal.tier)}
+          ${dealRow(I.calendar, 'Expected close', deal.closeDate)}
+          ${dealRow(I.shield, 'Protection', ['Won','Lost'].includes(deal.stage) ? 'Closed' : deal.protectionDays + ' days left', deal.protectionDays < 14 && !['Won','Lost'].includes(deal.stage) ? 'var(--rust)' : null)}
+          ${deal.notes ? `
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">
+              <div style="font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px;">Initial notes</div>
+              <div style="font-size:13px;line-height:1.5;color:var(--ink-3);">${escapeHtml(deal.notes)}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function dealRow(icon, label, value, accent) {
+  return `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+      <div style="color:var(--muted);margin-top:2px;flex-shrink:0;">${icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;color:var(--muted);font-weight:500;">${label}</div>
+        <div style="font-size:13px;margin-top:2px;color:${accent || 'var(--ink)'};font-weight:500;word-break:break-word;">${escapeHtml(value)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function updateStage(id, stage) {
+  const deal = state.deals.find(d => d.id === id);
+  if (deal) {
+    deal.stage = stage;
+    saveState(); render();
+    toast('Stage updated to ' + stageLabel(stage));
+  }
+}
+
+function postComment(id) {
+  const input = document.getElementById('comment-input');
+  if (!input || !input.value.trim()) return;
+  const deal = state.deals.find(d => d.id === id);
+  if (deal) {
+    deal.comments.push({ author: 'You', text: input.value.trim(), when: 'just now' });
+    saveState(); render();
+  }
+}
+
+/* === Register modal === */
+function openRegisterModal() {
+  if (!state.checklist.every(s => s.done)) {
+    toast('Complete onboarding first.');
+    return;
+  }
+  const m = document.createElement('div');
+  m.className = 'modal-backdrop';
+  m.id = 'register-modal';
+  m.onclick = (e) => { if (e.target === m) m.remove(); };
+  m.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <div class="display" style="font-size:22px;font-weight:500;">Register a lead</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">90-day protection begins on submission</div>
+        </div>
+        <button class="btn-icon" onclick="document.getElementById('register-modal').remove()">${I.x}</button>
+      </div>
+      <div class="modal-body" id="register-body">
+        <div style="margin-bottom:16px;">
+          <label class="field-label">End Customer company name <span class="req">*</span></label>
+          <input class="input" id="reg-company" oninput="checkConflict()" placeholder="e.g. Acme Manufacturing Ltd">
+        </div>
+        <div id="conflict-warning" style="display:none;background:#FCE9E5;border:1px solid #E8B4A8;color:var(--danger);padding:12px;border-radius:7px;font-size:13px;margin-bottom:16px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div>
+            <label class="field-label">Country <span class="req">*</span></label>
+            <select class="input" id="reg-country">
+              <option>United Kingdom</option><option>United States</option><option>Germany</option><option>France</option><option>India</option><option>Singapore</option><option>Australia</option><option>Canada</option><option>Netherlands</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Source <span class="req">*</span></label>
+            <select class="input" id="reg-source">
+              <option>Partner network</option><option>Outbound</option><option>Inbound</option><option>Event</option><option>Referral</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div>
+            <label class="field-label">Primary contact name <span class="req">*</span></label>
+            <input class="input" id="reg-contact">
+          </div>
+          <div>
+            <label class="field-label">Email <span class="req">*</span></label>
+            <input class="input" id="reg-email" type="email">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div>
+            <label class="field-label">Devices <span class="req">*</span></label>
+            <input class="input mono" id="reg-devices" type="number" oninput="updateRegValue()" placeholder="200">
+          </div>
+          <div>
+            <label class="field-label">Target tier <span class="req">*</span></label>
+            <select class="input" id="reg-tier" onchange="updateRegValue()">
+              <option>Standard</option><option>Premium</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Expected close <span class="req">*</span></label>
+            <input class="input" id="reg-date" type="date">
+          </div>
+        </div>
+
+        <div id="reg-value" style="background:var(--cream);padding:12px 16px;border-radius:7px;font-size:13px;display:none;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <span style="color:var(--muted);">Indicative annual value</span>
+          <span class="mono" style="font-weight:600;font-size:16px;" id="reg-value-num">$0</span>
+        </div>
+
+        <div>
+          <label class="field-label">Notes <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+          <textarea class="input" id="reg-notes" rows="3" placeholder="Qualification context, BANT summary, anything useful"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('register-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" id="reg-submit" onclick="submitRegister()" disabled>${I.shield} Register &amp; claim protection</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('reg-company').focus(), 50);
+}
+
+function checkConflict() {
+  const company = document.getElementById('reg-company').value.trim();
+  const warning = document.getElementById('conflict-warning');
+  const submit = document.getElementById('reg-submit');
+  if (company.length > 2) {
+    const match = state.deals.find(d => d.company.toLowerCase().includes(company.toLowerCase()) || company.toLowerCase().includes(d.company.toLowerCase()));
+    if (match) {
+      warning.innerHTML = '<strong>Conflict detected.</strong> A lead matching "' + escapeHtml(match.company) + '" is already claimed. Contact your Partner Success Manager if you believe this is an error.';
+      warning.style.display = 'block';
+      submit.disabled = true;
+      return;
+    }
+  }
+  warning.style.display = 'none';
+  validateRegForm();
+}
+
+function validateRegForm() {
+  const required = ['reg-company','reg-contact','reg-email','reg-devices','reg-date'];
+  const filled = required.every(id => document.getElementById(id).value.trim());
+  const conflict = document.getElementById('conflict-warning').style.display !== 'none';
+  document.getElementById('reg-submit').disabled = !filled || conflict;
+}
+
+function updateRegValue() {
+  const devices = parseInt(document.getElementById('reg-devices').value) || 0;
+  const tier = document.getElementById('reg-tier').value;
+  const v = devices * (tier === 'Premium' ? 8 : 4) * 12;
+  const box = document.getElementById('reg-value');
+  if (v > 0) {
+    box.style.display = 'flex';
+    document.getElementById('reg-value-num').textContent = '$' + v.toLocaleString();
+  } else {
+    box.style.display = 'none';
+  }
+  validateRegForm();
+}
+
+function submitRegister() {
+  const data = {
+    id: 'DR-' + (1100 + state.deals.length + Math.floor(Math.random()*50)),
+    company: document.getElementById('reg-company').value.trim(),
+    country: document.getElementById('reg-country').value,
+    contact: document.getElementById('reg-contact').value.trim(),
+    email: document.getElementById('reg-email').value.trim(),
+    phone: '',
+    devices: parseInt(document.getElementById('reg-devices').value),
+    tier: document.getElementById('reg-tier').value,
+    closeDate: document.getElementById('reg-date').value,
+    stage: 'Registered',
+    source: document.getElementById('reg-source').value,
+    notes: document.getElementById('reg-notes').value.trim(),
+    registered: new Date().toISOString().slice(0, 10),
+    protectionDays: 90,
+    comments: [],
+  };
+  state.deals.push(data);
+  saveState();
+  document.getElementById('register-modal').remove();
+  render();
+  toast('Lead registered. Protection: 90 days.');
+}
+
+// Watch form changes for validation
+document.addEventListener('input', e => {
+  if (e.target.closest('#register-body')) validateRegForm();
+});
+
+/* ============================================================
+   COLLATERALS
+   ============================================================ */
+let collateralSearch = '';
+
+function renderCollateral() {
+  const search = collateralSearch;
+  let items;
+  let displayTitle;
+  if (search) {
+    items = [];
+    COLLATERALS.forEach(f => f.items.forEach(item => {
+      if (item.name.toLowerCase().includes(search.toLowerCase())) items.push({ ...item, folder: f.folder });
+    }));
+    displayTitle = items.length + ' results for "' + escapeHtml(search) + '"';
+  } else {
+    const folder = COLLATERALS.find(f => f.folder === state.activeFolder) || COLLATERALS[0];
+    items = folder.items;
+    displayTitle = folder.folder;
+  }
+
+  return `
+    <div style="padding:36px;max-width:1200px;">
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;">
+        <div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:6px;">Module 3</div>
+          <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">Everything you need to pitch.</h1>
+          <p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:560px;">Sales playbooks, battlecards, technical docs, and your co-branded one-pager generator.</p>
+        </div>
+        <button class="btn btn-accent" onclick="openCobrand()">${I.zap} Generate co-branded one-pager</button>
+      </div>
+
+      <div class="fade-up" style="position:relative;margin-bottom:24px;">
+        <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);">${I.search}</div>
+        <input class="input" placeholder="Search all collaterals..." value="${escapeHtml(search)}" oninput="collateralSearch = this.value; document.getElementById('collateral-main').innerHTML = renderCollateralBody();" style="padding-left:40px;font-size:14px;padding-top:12px;padding-bottom:12px;">
+      </div>
+
+      <div class="fade-up" style="display:grid;grid-template-columns:220px 1fr;gap:24px;" id="collateral-main">
+        ${renderCollateralBody()}
+      </div>
+    </div>
+  `;
+}
+
+function renderCollateralBody() {
+  const search = collateralSearch;
+  let items, displayTitle;
+  if (search) {
+    items = [];
+    COLLATERALS.forEach(f => f.items.forEach(item => {
+      if (item.name.toLowerCase().includes(search.toLowerCase())) items.push({ ...item, folder: f.folder });
+    }));
+    displayTitle = items.length + ' results';
+  } else {
+    const folder = COLLATERALS.find(f => f.folder === state.activeFolder) || COLLATERALS[0];
+    items = folder.items;
+    displayTitle = folder.folder;
+  }
+
+  return `
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      ${COLLATERALS.map(f => {
+        const isMust = f.items.some(i => i.mustRead);
+        const isActive = !search && state.activeFolder === f.folder;
+        return `
+          <button onclick="state.activeFolder = '${f.folder.replace(/'/g, "\\'")}'; collateralSearch=''; saveState(); document.getElementById('collateral-main').innerHTML = renderCollateralBody();"
+                  style="background:${isActive ? 'var(--cream-2)' : 'transparent'};color:var(--ink);border:none;padding:10px 14px;border-radius:7px;font-size:13px;font-weight:${isActive ? '600' : '500'};cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.12s;">
+            ${I.folder}
+            <span style="flex:1;">${escapeHtml(f.folder)}</span>
+            ${isMust ? `<div class="pulse-dot" style="width:6px;height:6px;border-radius:3px;background:var(--rust);"></div>` : ''}
+          </button>
+        `;
+      }).join('')}
+    </div>
+    <div>
+      ${search ? `<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">${items.length} results for "${escapeHtml(search)}"</div>` : `<div class="display" style="font-size:22px;font-weight:500;margin-bottom:16px;">${escapeHtml(displayTitle)}</div>`}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${items.length === 0 ? `<div class="card empty-state">No results.</div>` : items.map(item => `
+          <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s;"
+               onmouseenter="this.style.borderColor='var(--ink-3)'" onmouseleave="this.style.borderColor='var(--line)'">
+            <div style="width:40px;height:40px;border-radius:8px;flex-shrink:0;background:${item.type==='PDF' ? 'var(--ink)' : item.type==='XLSX' ? 'var(--moss)' : item.type==='MP4' ? 'var(--rust)' : 'var(--ink-3)'};color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;letter-spacing:0.04em;">${item.type}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:500;font-size:14px;display:flex;align-items:center;gap:8px;">
+                ${escapeHtml(item.name)}
+                ${item.mustRead ? `<span class="pill" style="background:var(--rust);color:white;border-color:var(--rust);padding:2px 7px;font-size:9px;">MUST READ</span>` : ''}
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;">
+                ${item.folder ? escapeHtml(item.folder) + ' &middot; ' : ''}${item.size} &middot; Updated ${item.updated}
+                ${item.mustReadNote ? `<span style="color:var(--rust);margin-left:6px;">&middot; ${escapeHtml(item.mustReadNote)}</span>` : ''}
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="event.stopPropagation(); toast('Downloading: ${escapeHtml(item.name)}');">${I.download} Download</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+let cobrandSelected = null;
+let cobrandGenerated = false;
+function openCobrand() {
+  cobrandSelected = null;
+  cobrandGenerated = false;
+  const m = document.createElement('div');
+  m.className = 'modal-backdrop';
+  m.id = 'cobrand-modal';
+  m.onclick = (e) => { if (e.target === m) m.remove(); };
+  m.innerHTML = renderCobrandModal();
+  document.body.appendChild(m);
+}
+
+function renderCobrandModal() {
+  return `
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <div class="display" style="font-size:22px;font-weight:500;">Co-branded one-pager</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Pick a template &mdash; we add your logo automatically</div>
+        </div>
+        <button class="btn-icon" onclick="document.getElementById('cobrand-modal').remove()">${I.x}</button>
+      </div>
+      ${cobrandGenerated ? `
+        <div style="padding:48px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:14px;background:var(--moss);color:white;display:flex;align-items:center;justify-content:center;margin:0 auto;">${I.checkCircle}</div>
+          <div class="display" style="font-size:22px;font-weight:500;margin-top:20px;">Your co-branded PDF is ready</div>
+          <div style="font-size:14px;color:var(--muted);margin-top:8px;">${escapeHtml((COBRAND_TEMPLATES.find(t=>t.id===cobrandSelected)||{}).name || '')} &middot; branded with Northwave Tech logo</div>
+          <button class="btn btn-primary" style="margin-top:24px;" onclick="document.getElementById('cobrand-modal').remove(); toast('PDF downloaded.');">${I.download} Download</button>
+        </div>
+      ` : `
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:8px;padding:24px;">
+          ${COBRAND_TEMPLATES.map(t => `
+            <div onclick="cobrandSelected='${t.id}'; document.getElementById('cobrand-modal').innerHTML = renderCobrandModal();"
+                 class="card" style="padding:16px;cursor:pointer;border-color:${cobrandSelected===t.id ? 'var(--ink)' : 'var(--line)'};border-width:${cobrandSelected===t.id ? '2px' : '1px'};background:${cobrandSelected===t.id ? 'var(--cream)' : 'white'};display:flex;align-items:center;gap:14px;">
+              <div style="width:18px;height:18px;border-radius:9px;border:2px solid ${cobrandSelected===t.id ? 'var(--ink)' : 'var(--line)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                ${cobrandSelected===t.id ? '<div style="width:8px;height:8px;border-radius:4px;background:var(--ink);"></div>' : ''}
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:500;font-size:14px;">${escapeHtml(t.name)}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escapeHtml(t.desc)}</div>
+              </div>
+              <div style="color:var(--muted);">${I.fileText}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="modal-foot" style="justify-content:space-between;">
+          <div style="font-size:11px;color:var(--muted);">All co-branded outputs include "Powered by AssetZentri" footer.</div>
+          <button class="btn btn-primary" ${!cobrandSelected ? 'disabled' : ''} onclick="cobrandGenerated=true; document.getElementById('cobrand-modal').innerHTML = renderCobrandModal();">
+            ${I.zap} Generate PDF
+          </button>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+/* ============================================================
+   TEAM
+   ============================================================ */
+function renderTeam() {
+  return `
+    <div style="padding:36px;max-width:1000px;">
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;">
+        <div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:6px;">User management</div>
+          <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">Your team.</h1>
+          <p style="color:var(--muted);font-size:15px;margin-top:8px;">Add or remove team members without emailing Vistrive.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openInvite()">${I.plus} Invite team member</button>
+      </div>
+
+      <div class="card fade-up">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${state.team.map(m => `
+              <tr>
+                <td style="font-weight:500;">${escapeHtml(m.name)}</td>
+                <td style="color:var(--muted);">${escapeHtml(m.email)}</td>
+                <td>
+                  <span class="pill" style="background:${m.role==='Admin' ? 'var(--ink)' : 'var(--cream)'};color:${m.role==='Admin' ? 'var(--cream)' : 'var(--ink)'};border-color:${m.role==='Admin' ? 'var(--ink)' : 'var(--line-2)'};">${m.role}</span>
+                </td>
+                <td>
+                  <span style="font-size:12px;color:${m.status==='Active' ? 'var(--moss)' : 'var(--muted)'};font-weight:500;display:flex;align-items:center;gap:6px;">
+                    <span style="width:6px;height:6px;border-radius:3px;background:${m.status==='Active' ? 'var(--moss)' : 'var(--muted)'};"></span>
+                    ${m.status}
+                  </span>
+                </td>
+                <td style="text-align:right;">
+                  ${m.role !== 'Admin' ? `<button class="btn-icon" onclick="removeMember(${m.id})">${I.trash}</button>` : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openInvite() {
+  const m = document.createElement('div');
+  m.className = 'modal-backdrop';
+  m.id = 'invite-modal';
+  m.onclick = (e) => { if (e.target === m) m.remove(); };
+  m.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;">
+      <div class="modal-head">
+        <div class="display" style="font-size:22px;font-weight:500;">Invite team member</div>
+        <button class="btn-icon" onclick="document.getElementById('invite-modal').remove()">${I.x}</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="field-label">Full name <span class="req">*</span></label><input class="input" id="inv-name"></div>
+        <div><label class="field-label">Email <span class="req">*</span></label><input class="input" id="inv-email" type="email"></div>
+        <div><label class="field-label">Role <span class="req">*</span></label>
+          <select class="input" id="inv-role"><option>Seller</option><option>Admin</option><option>Read-Only</option></select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('invite-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitInvite()">Send invite</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('inv-name').focus(), 50);
+}
+
+function submitInvite() {
+  const name = document.getElementById('inv-name').value.trim();
+  const email = document.getElementById('inv-email').value.trim();
+  const role = document.getElementById('inv-role').value;
+  if (!name || !email) { toast('Name and email required.'); return; }
+  state.team.push({ id: Date.now(), name, email, role, status: 'Invited' });
+  saveState();
+  document.getElementById('invite-modal').remove();
+  render();
+  toast('Invitation sent to ' + email);
+}
+
+function removeMember(id) {
+  state.team = state.team.filter(m => m.id !== id);
+  saveState(); render();
+  toast('Team member removed.');
+}
+
+/* ============================================================
+   ADMIN VIEWS
+   ============================================================ */
+function renderAdmin() {
+  const active = state.deals.filter(d => !['Won','Lost'].includes(d.stage));
+  const won = state.deals.filter(d => d.stage === 'Won');
+  const totalPipeline = active.reduce((s,d) => s + annualValue(d), 0);
+  const wonValue = won.reduce((s,d) => s + annualValue(d), 0);
+  const completedSteps = state.checklist.filter(c => c.done).length;
+
+  const stageDist = {};
+  state.deals.forEach(d => { stageDist[d.stage] = (stageDist[d.stage] || 0) + 1; });
+
+  return `
+    <div style="padding:36px;max-width:1300px;">
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;">
+        <div>
+          <div style="font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px;">Vistrive Partner Operations</div>
+          <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">All partner activity.</h1>
+          <p style="color:var(--muted);font-size:15px;margin-top:8px;">Internal view &mdash; every deal, every partner, every onboarding step.</p>
+        </div>
+        <button class="btn btn-ghost" onclick="resetData()">${I.refresh} Reset demo data</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;" class="fade-up">
+        ${statCard('Active deals', active.length, 'In pipeline', 'var(--ink)')}
+        ${statCard('Pipeline value', fmtCurrencyShort(totalPipeline), 'Annualized', 'var(--teal)')}
+        ${statCard('Closed-won', won.length, fmtCurrencyShort(wonValue) + ' booked', 'var(--moss)')}
+        ${statCard('Onboarding', completedSteps + '/8', 'Sample partner', completedSteps === 8 ? 'var(--moss)' : 'var(--rust)')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+        <div class="card fade-up">
+          <div style="padding:18px 22px;border-bottom:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">All deals</div>
+            <div class="display" style="font-size:20px;font-weight:500;margin-top:2px;">Pipeline across all partners</div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Deal ID</th><th>Company</th><th>Partner</th><th>Stage</th><th style="text-align:right;">Value</th></tr></thead>
+            <tbody>
+              ${state.deals.map(d => `
+                <tr>
+                  <td class="mono" style="font-size:12px;color:var(--muted);">${d.id}</td>
+                  <td style="font-weight:500;">${escapeHtml(d.company)}</td>
+                  <td style="color:var(--muted);">Northwave Tech (Gold)</td>
+                  <td><span class="pill ${stagePillClass(d.stage)}">${stageLabel(d.stage)}</span></td>
+                  <td class="mono" style="text-align:right;font-weight:500;">${fmtCurrency(annualValue(d))}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="card fade-up" style="padding:22px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:12px;">Stage distribution</div>
+            ${Object.entries(stageDist).map(([s, count]) => `
+              <div style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                  <span>${stageLabel(s)}</span><span class="mono" style="color:var(--muted);">${count}</span>
+                </div>
+                <div style="background:var(--cream);border-radius:3px;height:6px;overflow:hidden;">
+                  <div style="background:var(--ink);height:100%;width:${(count/state.deals.length)*100}%;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="card fade-up" style="padding:22px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:4px;">Partner status (sample)</div>
+            <div style="font-weight:500;margin-top:8px;">Northwave Tech</div>
+            <div style="font-size:12px;color:var(--muted);">Gold partner &middot; UK &middot; ${state.team.length} team members</div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Onboarding</div>
+              <div style="background:var(--cream);border-radius:3px;height:6px;overflow:hidden;">
+                <div style="background:${completedSteps===8 ? 'var(--moss)' : 'var(--ink)'};height:100%;width:${(completedSteps/8)*100}%;"></div>
+              </div>
+              <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px;">${completedSteps} of 8 steps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminDeals() {
+  return `
+    <div style="padding:36px;max-width:1300px;">
+      <div class="fade-up" style="margin-bottom:32px;">
+        <div style="font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px;">Vistrive Partner Operations</div>
+        <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">All deals.</h1>
+        <p style="color:var(--muted);font-size:15px;margin-top:8px;">Every registered lead across the partner network.</p>
+      </div>
+      <div class="card fade-up">
+        <table class="data-table">
+          <thead><tr><th>Deal ID</th><th>Company</th><th>Country</th><th>Partner</th><th>Tier / Devices</th><th>Stage</th><th>Protection</th><th style="text-align:right;">Value</th></tr></thead>
+          <tbody>
+            ${state.deals.map(d => `
+              <tr>
+                <td class="mono" style="font-size:12px;color:var(--muted);">${d.id}</td>
+                <td style="font-weight:500;">${escapeHtml(d.company)}</td>
+                <td style="color:var(--muted);">${escapeHtml(d.country)}</td>
+                <td style="color:var(--muted);">Northwave Tech (Gold)</td>
+                <td>${d.tier} <span class="mono" style="color:var(--muted);margin-left:8px;font-size:12px;">${d.devices}</span></td>
+                <td><span class="pill ${stagePillClass(d.stage)}">${stageLabel(d.stage)}</span></td>
+                <td class="mono" style="font-size:12px;color:${d.protectionDays < 14 && !['Won','Lost'].includes(d.stage) ? 'var(--rust)' : 'var(--muted)'};">${['Won','Lost'].includes(d.stage) ? '\u2014' : d.protectionDays + ' days'}</td>
+                <td class="mono" style="text-align:right;font-weight:500;">${fmtCurrency(annualValue(d))}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   PARTNER DETAIL DATA — seeded per partner
+   ============================================================ */
+const PARTNER_DIRECTORY = [
+  {
+    id: 'p1', name: 'Northwave Technologies', tier: 'Gold', country: 'United Kingdom',
+    psm: 'Riya Chen', joined: '2026-03-12',
+    contact: { name: 'Alex Morgan', email: 'alex@northwave-tech.com', phone: '+44 20 7946 0500' },
+    isCurrentUser: true, // pulls live data from state
+  },
+  {
+    id: 'p2', name: 'Atlas IT Group', tier: 'Gold', country: 'United States',
+    psm: 'Daniel Reyes', joined: '2026-02-18',
+    contact: { name: 'Maya Holloway', email: 'maya.h@atlasit.com', phone: '+1 415 555 0188' },
+    team: [
+      { name: 'Maya Holloway', email: 'maya.h@atlasit.com', role: 'Admin', status: 'Active' },
+      { name: 'Devon Park', email: 'devon@atlasit.com', role: 'Seller', status: 'Active' },
+      { name: 'Sara Linden', email: 'sara@atlasit.com', role: 'Seller', status: 'Active' },
+      { name: 'Carlos Beck', email: 'carlos@atlasit.com', role: 'Seller', status: 'Active' },
+      { name: 'Tara Wu', email: 'tara@atlasit.com', role: 'Seller', status: 'Active' },
+      { name: 'Brendan Liu', email: 'brendan@atlasit.com', role: 'Seller', status: 'Invited' },
+      { name: 'Ana Faria', email: 'ana@atlasit.com', role: 'Read-Only', status: 'Active' },
+    ],
+    onboarding: 8,
+    deals: [
+      { id: 'DR-1018', company: 'Pioneer Logistics', country: 'United States', devices: 420, tier: 'Standard', stage: 'Won', protectionDays: 0, closeDate: '2026-04-30' },
+      { id: 'DR-1029', company: 'Sterling Financial', country: 'United States', devices: 600, tier: 'Premium', stage: 'Won', protectionDays: 0, closeDate: '2026-05-15' },
+      { id: 'DR-1051', company: 'Cobalt Engineering', country: 'United States', devices: 280, tier: 'Standard', stage: 'Proposal', protectionDays: 42, closeDate: '2026-08-10' },
+      { id: 'DR-1063', company: 'Brightwater Foods', country: 'United States', devices: 190, tier: 'Standard', stage: 'Demo', protectionDays: 67, closeDate: '2026-09-05' },
+      { id: 'DR-1078', company: 'Vertex BioPharma', country: 'United States', devices: 950, tier: 'Premium', stage: 'Qualified', protectionDays: 84, closeDate: '2026-10-20' },
+    ],
+  },
+  {
+    id: 'p3', name: 'Helvetia Cloud Partners', tier: 'Silver', country: 'Switzerland',
+    psm: 'Aanya Patel', joined: '2026-04-02',
+    contact: { name: 'Lukas Fischer', email: 'lukas.f@helvetia-cloud.ch', phone: '+41 44 123 4567' },
+    team: [
+      { name: 'Lukas Fischer', email: 'lukas.f@helvetia-cloud.ch', role: 'Admin', status: 'Active' },
+      { name: 'Sofia Brunner', email: 'sofia@helvetia-cloud.ch', role: 'Seller', status: 'Active' },
+      { name: 'Hans Vogel', email: 'hans@helvetia-cloud.ch', role: 'Seller', status: 'Active' },
+      { name: 'Lara Keller', email: 'lara@helvetia-cloud.ch', role: 'Read-Only', status: 'Active' },
+    ],
+    onboarding: 8,
+    deals: [
+      { id: 'DR-1037', company: 'Alpine Insurance Group', country: 'Switzerland', devices: 340, tier: 'Premium', stage: 'Legal', protectionDays: 51, closeDate: '2026-07-22' },
+      { id: 'DR-1062', company: 'Genevoise Watchworks', country: 'Switzerland', devices: 140, tier: 'Standard', stage: 'Demo', protectionDays: 68, closeDate: '2026-08-30' },
+    ],
+  },
+  {
+    id: 'p4', name: 'Pacific Rim Tech', tier: 'Silver', country: 'Singapore',
+    psm: 'Aanya Patel', joined: '2026-04-28',
+    contact: { name: 'Wei-Lin Tan', email: 'wlt@pacrim-tech.sg', phone: '+65 6123 4567' },
+    team: [
+      { name: 'Wei-Lin Tan', email: 'wlt@pacrim-tech.sg', role: 'Admin', status: 'Active' },
+      { name: 'Arjun Mehta', email: 'arjun@pacrim-tech.sg', role: 'Seller', status: 'Active' },
+      { name: 'Hiroshi Sato', email: 'hiroshi@pacrim-tech.sg', role: 'Seller', status: 'Invited' },
+    ],
+    onboarding: 6,
+    deals: [
+      { id: 'DR-1074', company: 'Marina Bay Logistics', country: 'Singapore', devices: 220, tier: 'Standard', stage: 'Qualified', protectionDays: 71, closeDate: '2026-09-12' },
+    ],
+  },
+  {
+    id: 'p5', name: 'Lumen Consulting', tier: 'Bronze', country: 'India',
+    psm: 'Vikram Singh', joined: '2026-05-04',
+    contact: { name: 'Anjali Krishnan', email: 'anjali@lumen-consulting.in', phone: '+91 80 4567 8900' },
+    team: [
+      { name: 'Anjali Krishnan', email: 'anjali@lumen-consulting.in', role: 'Admin', status: 'Active' },
+      { name: 'Rohan Desai', email: 'rohan@lumen-consulting.in', role: 'Seller', status: 'Active' },
+    ],
+    onboarding: 4,
+    deals: [],
+  },
+];
+
+function getAllPartners() {
+  // Merge seeded directory with admin-created partners. Custom partners get isCustom flag.
+  return [
+    ...PARTNER_DIRECTORY,
+    ...state.customPartners.map(p => ({ ...p, isCustom: true })),
+  ];
+}
+
+function getPartnerData(p) {
+  // For the current user partner, pull live data from state
+  if (p.isCurrentUser) {
+    return {
+      ...p,
+      team: state.team,
+      deals: state.deals,
+      onboarding: state.checklist.filter(c => c.done).length,
+    };
+  }
+  return p;
+}
+
+function partnerStats(p) {
+  const data = getPartnerData(p);
+  const active = data.deals.filter(d => !['Won','Lost'].includes(d.stage));
+  const won = data.deals.filter(d => d.stage === 'Won');
+  const annualPipeline = active.reduce((s,d) => s + (d.devices * (d.tier === 'Premium' ? 8 : 4) * 12), 0);
+  const wonValue = won.reduce((s,d) => s + (d.devices * (d.tier === 'Premium' ? 8 : 4) * 12), 0);
+  return {
+    members: data.team.length,
+    deals: data.deals.length,
+    activeDeals: active.length,
+    wonDeals: won.length,
+    annualPipeline,
+    wonValue,
+    mrr: annualPipeline / 12,
+    onboarding: data.onboarding,
+  };
+}
+
+function renderAdminPartners() {
+  const partners = getAllPartners();
+  const customCount = partners.filter(p => p.isCustom).length;
+  return `
+    <div style="padding:36px;max-width:1300px;">
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;gap:24px;">
+        <div>
+          <div style="font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px;">Vistrive Partner Operations</div>
+          <h1 class="display" style="font-size:38px;font-weight:500;margin:0;line-height:1.1;">Partners.</h1>
+          <p style="color:var(--muted);font-size:15px;margin-top:8px;">
+            ${partners.length} partner${partners.length === 1 ? '' : 's'} in your network${customCount > 0 ? ' &middot; ' + customCount + ' added by your team' : ''}. Click any row to drill in.
+          </p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreatePartner()">${I.plus} Add partner</button>
+      </div>
+      <div class="card fade-up">
+        <table class="data-table">
+          <thead><tr><th>Partner</th><th>Tier</th><th>Country</th><th>Team</th><th>Onboarding</th><th>Active deals</th><th style="text-align:right;">MRR contribution</th><th></th></tr></thead>
+          <tbody>
+            ${partners.map(p => {
+              const s = partnerStats(p);
+              return `
+                <tr class="clickable" onclick="openPartner('${p.id}')">
+                  <td style="font-weight:500;display:flex;align-items:center;gap:8px;">
+                    ${escapeHtml(p.name)}
+                    ${p.isCustom ? '<span class="pill" style="background:#EAF1E8;color:var(--moss);border-color:#B5C9AC;padding:1px 6px;font-size:9px;">NEW</span>' : ''}
+                  </td>
+                  <td><span class="pill" style="background:${p.tier==='Gold' ? 'var(--gold)' : p.tier==='Silver' ? 'var(--cream-2)' : '#D4A77A'};color:${p.tier==='Silver' ? 'var(--ink)' : 'white'};border-color:transparent;">${p.tier}</span></td>
+                  <td style="color:var(--muted);">${escapeHtml(p.country)}</td>
+                  <td class="mono">${s.members}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="background:var(--cream);border-radius:3px;height:4px;width:60px;overflow:hidden;">
+                        <div style="background:${s.onboarding===8 ? 'var(--moss)' : 'var(--ink)'};height:100%;width:${(s.onboarding/8)*100}%;"></div>
+                      </div>
+                      <span class="mono" style="font-size:11px;color:var(--muted);">${s.onboarding}/8</span>
+                    </div>
+                  </td>
+                  <td class="mono">${s.activeDeals}</td>
+                  <td class="mono" style="text-align:right;font-weight:500;">${fmtCurrency(s.mrr)}</td>
+                  <td style="color:var(--muted);text-align:right;padding-right:18px;">${I.arrowRight}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openPartner(id) {
+  state.selectedPartnerId = id;
+  state.view = 'admin-partner-detail';
+  saveState();
+  render();
+  document.querySelector('main').scrollTop = 0;
+}
+
+/* === Create partner modal (admin only) === */
+let createPartnerStep = 1;
+let createPartnerData = null;
+
+function openCreatePartner() {
+  createPartnerStep = 1;
+  createPartnerData = {
+    name: '', tier: 'Silver', country: 'United Kingdom',
+    contactName: '', contactEmail: '', contactPhone: '',
+    psm: 'Riya Chen',
+    additionalUsers: [],
+  };
+  renderCreatePartnerModal();
+}
+
+function renderCreatePartnerModal() {
+  // Remove any existing
+  const existing = document.getElementById('create-partner-modal');
+  if (existing) existing.remove();
+
+  const m = document.createElement('div');
+  m.className = 'modal-backdrop';
+  m.id = 'create-partner-modal';
+  m.onclick = (e) => { if (e.target === m) closeCreatePartner(); };
+  m.innerHTML = createPartnerStep === 1 ? createPartnerStep1HTML() : createPartnerStep2HTML();
+  document.body.appendChild(m);
+  setTimeout(() => {
+    const focusEl = document.getElementById(createPartnerStep === 1 ? 'cp-name' : 'cp-extra-name');
+    if (focusEl) focusEl.focus();
+  }, 50);
+}
+
+function closeCreatePartner() {
+  const m = document.getElementById('create-partner-modal');
+  if (m) m.remove();
+}
+
+function createPartnerStep1HTML() {
+  const d = createPartnerData;
+  return `
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:680px;">
+      <div class="modal-head">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="pill" style="background:var(--cream);color:var(--muted);border-color:var(--line);font-size:10px;">Step 1 of 2</span>
+            <span style="font-size:11px;color:var(--muted);">Partner details</span>
+          </div>
+          <div class="display" style="font-size:22px;font-weight:500;">Add a new partner</div>
+        </div>
+        <button class="btn-icon" onclick="closeCreatePartner()">${I.x}</button>
+      </div>
+      <div class="modal-body" id="cp-body">
+        <div style="margin-bottom:16px;">
+          <label class="field-label">Partner company name <span class="req">*</span></label>
+          <input class="input" id="cp-name" value="${escapeHtml(d.name)}" oninput="cpUpdate('name', this.value); validateCpStep1();" placeholder="e.g. Aurora Cloud Solutions">
+        </div>
+
+        <div id="cp-name-conflict" style="display:none;background:#FCE9E5;border:1px solid #E8B4A8;color:var(--danger);padding:12px;border-radius:7px;font-size:13px;margin-bottom:16px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div>
+            <label class="field-label">Tier <span class="req">*</span></label>
+            <select class="input" id="cp-tier" onchange="cpUpdate('tier', this.value)">
+              <option ${d.tier==='Gold'?'selected':''}>Gold</option>
+              <option ${d.tier==='Silver'?'selected':''}>Silver</option>
+              <option ${d.tier==='Bronze'?'selected':''}>Bronze</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Country <span class="req">*</span></label>
+            <select class="input" id="cp-country" onchange="cpUpdate('country', this.value)">
+              ${['United Kingdom','United States','Germany','France','India','Singapore','Australia','Canada','Netherlands','Switzerland','Japan','Brazil','UAE','South Africa'].map(c => `<option ${d.country===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;padding-top:14px;border-top:1px solid var(--line);">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:12px;">Primary contact (becomes Partner Admin)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div>
+              <label class="field-label">Full name <span class="req">*</span></label>
+              <input class="input" id="cp-contact-name" value="${escapeHtml(d.contactName)}" oninput="cpUpdate('contactName', this.value); validateCpStep1();">
+            </div>
+            <div>
+              <label class="field-label">Email <span class="req">*</span></label>
+              <input class="input" type="email" id="cp-contact-email" value="${escapeHtml(d.contactEmail)}" oninput="cpUpdate('contactEmail', this.value); validateCpStep1();" placeholder="alex@partner.com">
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Phone <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+            <input class="input" id="cp-contact-phone" value="${escapeHtml(d.contactPhone)}" oninput="cpUpdate('contactPhone', this.value);">
+          </div>
+        </div>
+
+        <div style="padding-top:14px;border-top:1px solid var(--line);">
+          <label class="field-label">Assigned Vistrive PSM</label>
+          <select class="input" id="cp-psm" onchange="cpUpdate('psm', this.value)">
+            <option ${d.psm==='Riya Chen'?'selected':''}>Riya Chen</option>
+            <option ${d.psm==='Daniel Reyes'?'selected':''}>Daniel Reyes</option>
+            <option ${d.psm==='Aanya Patel'?'selected':''}>Aanya Patel</option>
+            <option ${d.psm==='Vikram Singh'?'selected':''}>Vikram Singh</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeCreatePartner()">Cancel</button>
+        <button class="btn btn-primary" id="cp-next" onclick="cpGoToStep2()" disabled>
+          Continue: add team ${I.arrowRight}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function createPartnerStep2HTML() {
+  const d = createPartnerData;
+  return `
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:680px;">
+      <div class="modal-head">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="pill" style="background:var(--cream);color:var(--muted);border-color:var(--line);font-size:10px;">Step 2 of 2</span>
+            <span style="font-size:11px;color:var(--muted);">Initial team</span>
+          </div>
+          <div class="display" style="font-size:22px;font-weight:500;">Add team members</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">${escapeHtml(d.name)} &middot; ${d.tier} partner</div>
+        </div>
+        <button class="btn-icon" onclick="closeCreatePartner()">${I.x}</button>
+      </div>
+      <div class="modal-body" id="cp-body">
+        <div style="background:var(--cream);border-radius:8px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+          <div style="width:32px;height:32px;border-radius:7px;background:var(--ink);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;">
+            ${escapeHtml(d.contactName.split(' ').map(n => n[0]).join('').slice(0,2))}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;">${escapeHtml(d.contactName)}</div>
+            <div style="font-size:11px;color:var(--muted);">${escapeHtml(d.contactEmail)}</div>
+          </div>
+          <span class="pill" style="background:var(--ink);color:white;border-color:var(--ink);">ADMIN</span>
+        </div>
+
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px;">
+          Invite additional users ${d.additionalUsers.length > 0 ? '(' + d.additionalUsers.length + ')' : '(optional)'}
+        </div>
+
+        <div id="cp-extra-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+          ${d.additionalUsers.length === 0 ? `
+            <div style="background:#FAFBFC;border:1px dashed var(--line);border-radius:8px;padding:18px;text-align:center;color:var(--muted);font-size:13px;">
+              No additional users yet. Add some below or skip to finish.
+            </div>
+          ` : d.additionalUsers.map((u, i) => `
+            <div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <div style="width:28px;height:28px;border-radius:6px;background:var(--cream);color:var(--ink-3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">
+                ${escapeHtml(u.name.split(' ').map(n => n[0]).join('').slice(0,2))}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:500;">${escapeHtml(u.name)}</div>
+                <div style="font-size:11px;color:var(--muted);">${escapeHtml(u.email)}</div>
+              </div>
+              <span class="pill" style="background:var(--cream);color:var(--ink);border-color:var(--line-2);">${u.role}</span>
+              <button class="btn-icon" onclick="cpRemoveExtra(${i})" title="Remove">${I.trash}</button>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="background:#FAFBFC;border:1px solid var(--line);border-radius:8px;padding:14px;">
+          <div style="font-size:12px;font-weight:500;margin-bottom:10px;">Add another user</div>
+          <div style="display:grid;grid-template-columns:1.4fr 1.4fr 1fr auto;gap:8px;align-items:end;">
+            <div>
+              <label class="field-label" style="font-size:11px;">Name</label>
+              <input class="input" id="cp-extra-name" placeholder="Full name" onkeydown="if(event.key==='Enter') cpAddExtra();">
+            </div>
+            <div>
+              <label class="field-label" style="font-size:11px;">Email</label>
+              <input class="input" id="cp-extra-email" type="email" placeholder="email@partner.com" onkeydown="if(event.key==='Enter') cpAddExtra();">
+            </div>
+            <div>
+              <label class="field-label" style="font-size:11px;">Role</label>
+              <select class="input" id="cp-extra-role">
+                <option>Seller</option>
+                <option>Read-Only</option>
+                <option>Admin</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" onclick="cpAddExtra()" style="height:36px;">${I.plus} Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot" style="justify-content:space-between;">
+        <button class="btn btn-ghost" onclick="cpBackToStep1()">${I.arrowLeft} Back</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="closeCreatePartner()">Cancel</button>
+          <button class="btn btn-primary" onclick="cpSubmit()">${I.check} Create partner</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function cpUpdate(key, value) {
+  createPartnerData[key] = value;
+}
+
+function validateCpStep1() {
+  const d = createPartnerData;
+  const filled = d.name.trim() && d.contactName.trim() && d.contactEmail.trim();
+
+  // Conflict check — same name as existing partner?
+  const allPartners = getAllPartners();
+  const conflict = d.name.trim().length > 2 && allPartners.find(p =>
+    p.name.toLowerCase().includes(d.name.trim().toLowerCase()) ||
+    d.name.trim().toLowerCase().includes(p.name.toLowerCase())
+  );
+  const conflictBox = document.getElementById('cp-name-conflict');
+  if (conflict) {
+    conflictBox.style.display = 'block';
+    conflictBox.innerHTML = '<strong>Name conflict.</strong> "' + escapeHtml(conflict.name) + '" is already in your partner directory.';
+  } else {
+    conflictBox.style.display = 'none';
+  }
+
+  // Email conflict check
+  const emailConflict = d.contactEmail.trim() && allPartners.find(p => p.contact && p.contact.email.toLowerCase() === d.contactEmail.trim().toLowerCase());
+
+  document.getElementById('cp-next').disabled = !filled || !!conflict || !!emailConflict;
+}
+
+function cpGoToStep2() {
+  createPartnerStep = 2;
+  renderCreatePartnerModal();
+}
+
+function cpBackToStep1() {
+  createPartnerStep = 1;
+  renderCreatePartnerModal();
+}
+
+function cpAddExtra() {
+  const name = document.getElementById('cp-extra-name').value.trim();
+  const email = document.getElementById('cp-extra-email').value.trim();
+  const role = document.getElementById('cp-extra-role').value;
+  if (!name || !email) {
+    toast('Name and email required.');
+    return;
+  }
+  // Check duplicate within additional users
+  if (createPartnerData.additionalUsers.find(u => u.email.toLowerCase() === email.toLowerCase()) ||
+      email.toLowerCase() === createPartnerData.contactEmail.toLowerCase()) {
+    toast('That email is already on the list.');
+    return;
+  }
+  createPartnerData.additionalUsers.push({ name, email, role });
+  renderCreatePartnerModal();
+  // refocus the name input for fast bulk-add
+  setTimeout(() => {
+    const el = document.getElementById('cp-extra-name');
+    if (el) el.focus();
+  }, 60);
+}
+
+function cpRemoveExtra(i) {
+  createPartnerData.additionalUsers.splice(i, 1);
+  renderCreatePartnerModal();
+}
+
+function cpSubmit() {
+  const d = createPartnerData;
+  const id = 'p-custom-' + Date.now();
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Build the new partner record matching PARTNER_DIRECTORY shape
+  const newPartner = {
+    id,
+    name: d.name.trim(),
+    tier: d.tier,
+    country: d.country,
+    psm: d.psm,
+    joined: today,
+    contact: {
+      name: d.contactName.trim(),
+      email: d.contactEmail.trim(),
+      phone: d.contactPhone.trim() || '—',
+    },
+    team: [
+      { name: d.contactName.trim(), email: d.contactEmail.trim(), role: 'Admin', status: 'Invited' },
+      ...d.additionalUsers.map(u => ({ ...u, status: 'Invited' })),
+    ],
+    onboarding: 0,
+    deals: [],
+  };
+
+  state.customPartners.push(newPartner);
+  saveState();
+  closeCreatePartner();
+  toast(d.name + ' added. Invitation emails sent.');
+
+  // Jump straight to the new partner's detail page
+  openPartner(id);
+}
+
+/* === Partner detail — admin can also invite users to any partner === */
+function adminInvitePartnerUser(partnerId) {
+  const m = document.createElement('div');
+  m.className = 'modal-backdrop';
+  m.id = 'admin-invite-modal';
+  m.onclick = (e) => { if (e.target === m) m.remove(); };
+  m.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;">
+      <div class="modal-head">
+        <div class="display" style="font-size:22px;font-weight:500;">Invite user to partner</div>
+        <button class="btn-icon" onclick="document.getElementById('admin-invite-modal').remove()">${I.x}</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div><label class="field-label">Full name <span class="req">*</span></label><input class="input" id="ai-name"></div>
+        <div><label class="field-label">Email <span class="req">*</span></label><input class="input" id="ai-email" type="email"></div>
+        <div><label class="field-label">Role <span class="req">*</span></label>
+          <select class="input" id="ai-role"><option>Seller</option><option>Admin</option><option>Read-Only</option></select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('admin-invite-modal').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="adminSubmitInvite('${partnerId}')">Send invite</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('ai-name').focus(), 50);
+}
+
+function adminSubmitInvite(partnerId) {
+  const name = document.getElementById('ai-name').value.trim();
+  const email = document.getElementById('ai-email').value.trim();
+  const role = document.getElementById('ai-role').value;
+  if (!name || !email) { toast('Name and email required.'); return; }
+
+  // Find partner — custom partners only for now (seed partners are immutable)
+  const custom = state.customPartners.find(p => p.id === partnerId);
+  if (custom) {
+    custom.team.push({ name, email, role, status: 'Invited' });
+    saveState();
+    document.getElementById('admin-invite-modal').remove();
+    render();
+    toast('Invitation sent to ' + email);
+  } else {
+    document.getElementById('admin-invite-modal').remove();
+    toast('Cannot modify seeded partners in this demo.');
+  }
+}
+
+function deleteCustomPartner(id) {
+  const p = state.customPartners.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm('Delete partner "' + p.name + '"? This cannot be undone.')) return;
+  state.customPartners = state.customPartners.filter(x => x.id !== id);
+  state.selectedPartnerId = null;
+  state.view = 'admin-partners';
+  saveState();
+  render();
+  toast('Partner removed.');
+}
+
+function renderAdminPartnerDetail() {
+  const p = getAllPartners().find(x => x.id === state.selectedPartnerId);
+  if (!p) {
+    state.view = 'admin-partners';
+    return renderAdminPartners();
+  }
+  const data = getPartnerData(p);
+  const s = partnerStats(p);
+
+  const tierColor = p.tier === 'Gold' ? 'var(--gold)' : p.tier === 'Silver' ? 'var(--ink-3)' : '#A6743F';
+
+  // Onboarding step labels (for the non-current partners, we just mark the first N done)
+  const stepLabels = SEED_CHECKLIST.map(c => c.title);
+  const onbSteps = stepLabels.map((title, i) => ({ title, done: i < s.onboarding }));
+
+  return `
+    <div style="padding:36px;max-width:1300px;">
+      <button class="btn btn-ghost fade-up" onclick="state.selectedPartnerId=null; navigate('admin-partners');" style="margin-bottom:24px;">
+        ${I.arrowLeft} Back to all partners
+      </button>
+
+      <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;gap:24px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+            <div style="width:48px;height:48px;border-radius:10px;background:${tierColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;font-family:'Fraunces',serif;flex-shrink:0;">
+              ${escapeHtml(p.name.split(' ').map(w => w[0]).join('').slice(0,2))}
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <h1 class="display" style="font-size:32px;font-weight:500;margin:0;line-height:1.1;">${escapeHtml(p.name)}</h1>
+                ${p.isCustom ? '<span class="pill" style="background:#EAF1E8;color:var(--moss);border-color:#B5C9AC;font-size:10px;">NEW</span>' : ''}
+              </div>
+              <div style="display:flex;gap:14px;align-items:center;margin-top:6px;">
+                <span class="pill" style="background:${p.tier==='Gold' ? 'var(--gold)' : p.tier==='Silver' ? 'var(--cream-2)' : '#D4A77A'};color:${p.tier==='Silver' ? 'var(--ink)' : 'white'};border-color:transparent;">${p.tier} PARTNER</span>
+                <span style="font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;">${I.mapPin} ${escapeHtml(p.country)}</span>
+                <span style="font-size:13px;color:var(--muted);">Joined ${p.joined}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          ${p.isCustom ? `<button class="btn btn-ghost" onclick="deleteCustomPartner('${p.id}')" style="color:var(--danger);border-color:var(--line);">${I.trash} Remove</button>` : ''}
+          <button class="btn btn-ghost">${I.mail} Email PSM</button>
+          <button class="btn btn-primary">View QBR</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;" class="fade-up">
+        ${statCard('Onboarding', s.onboarding + '/8', s.onboarding === 8 ? 'Active' : 'In progress', s.onboarding === 8 ? 'var(--moss)' : 'var(--rust)')}
+        ${statCard('Active deals', s.activeDeals, s.deals + ' total', 'var(--ink)')}
+        ${statCard('Pipeline', fmtCurrencyShort(s.annualPipeline), 'Annualized', 'var(--teal)')}
+        ${statCard('Closed-won', s.wonDeals, fmtCurrencyShort(s.wonValue) + ' booked', 'var(--gold)')}
+      </div>
+
+      <!-- Two-column body -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <!-- Deal pipeline -->
+          <div class="card fade-up">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--line);">
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Pipeline</div>
+              <div class="display" style="font-size:20px;font-weight:500;margin-top:2px;">${escapeHtml(p.name)}'s deals</div>
+            </div>
+            ${data.deals.length === 0 ? `
+              <div class="empty-state">No deals registered yet.</div>
+            ` : `
+              <table class="data-table">
+                <thead><tr><th>Deal ID</th><th>Company</th><th>Country</th><th>Tier / Devices</th><th>Stage</th><th>Protection</th><th style="text-align:right;">Value</th></tr></thead>
+                <tbody>
+                  ${data.deals.map(d => `
+                    <tr>
+                      <td class="mono" style="font-size:12px;color:var(--muted);">${d.id}</td>
+                      <td style="font-weight:500;">${escapeHtml(d.company)}</td>
+                      <td style="color:var(--muted);">${escapeHtml(d.country)}</td>
+                      <td>${d.tier} <span class="mono" style="color:var(--muted);margin-left:8px;font-size:12px;">${d.devices}</span></td>
+                      <td><span class="pill ${stagePillClass(d.stage)}">${stageLabel(d.stage)}</span></td>
+                      <td class="mono" style="font-size:12px;color:${d.protectionDays < 14 && !['Won','Lost'].includes(d.stage) ? 'var(--rust)' : 'var(--muted)'};">
+                        ${['Won','Lost'].includes(d.stage) ? '\u2014' : d.protectionDays + ' days'}
+                      </td>
+                      <td class="mono" style="text-align:right;font-weight:500;">${fmtCurrency(d.devices * (d.tier === 'Premium' ? 8 : 4) * 12)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+
+          <!-- Team -->
+          <div class="card fade-up">
+            <div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Team</div>
+                <div class="display" style="font-size:20px;font-weight:500;margin-top:2px;">${s.members} member${s.members === 1 ? '' : 's'}</div>
+              </div>
+              ${p.isCustom ? `<button class="btn btn-ghost" onclick="adminInvitePartnerUser('${p.id}')">${I.plus} Invite user</button>` : ''}
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+              <tbody>
+                ${data.team.map(m => `
+                  <tr>
+                    <td style="font-weight:500;">${escapeHtml(m.name)}</td>
+                    <td style="color:var(--muted);">${escapeHtml(m.email)}</td>
+                    <td>
+                      <span class="pill" style="background:${m.role==='Admin' ? 'var(--ink)' : 'var(--cream)'};color:${m.role==='Admin' ? 'var(--cream)' : 'var(--ink)'};border-color:${m.role==='Admin' ? 'var(--ink)' : 'var(--line-2)'};">${m.role}</span>
+                    </td>
+                    <td>
+                      <span style="font-size:12px;color:${m.status==='Active' ? 'var(--moss)' : 'var(--muted)'};font-weight:500;display:flex;align-items:center;gap:6px;">
+                        <span style="width:6px;height:6px;border-radius:3px;background:${m.status==='Active' ? 'var(--moss)' : 'var(--muted)'};"></span>
+                        ${m.status}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <!-- Primary contact -->
+          <div class="card fade-up" style="padding:22px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:16px;">Primary contact</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div style="width:40px;height:40px;border-radius:8px;background:${tierColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0;">
+                ${escapeHtml(p.contact.name.split(' ').map(n => n[0]).join(''))}
+              </div>
+              <div>
+                <div style="font-weight:500;font-size:14px;">${escapeHtml(p.contact.name)}</div>
+                <div style="font-size:12px;color:var(--muted);">Partner Admin</div>
+              </div>
+            </div>
+            ${dealRow(I.mail, 'Email', p.contact.email)}
+            ${dealRow(I.building, 'Phone', p.contact.phone)}
+            <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px;">
+              <div style="font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px;">Assigned PSM</div>
+              <div style="font-size:13px;font-weight:500;">${escapeHtml(p.psm)}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">Vistrive Partner Success</div>
+            </div>
+          </div>
+
+          <!-- Onboarding state -->
+          <div class="card fade-up" style="padding:22px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Onboarding</div>
+              <span class="mono" style="font-size:12px;color:var(--muted);">${s.onboarding} / 8</span>
+            </div>
+            <div style="background:var(--cream);border-radius:4px;height:6px;overflow:hidden;margin-bottom:16px;">
+              <div style="background:${s.onboarding===8 ? 'var(--moss)' : 'var(--ink)'};height:100%;width:${(s.onboarding/8)*100}%;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${onbSteps.map((step, i) => `
+                <div style="display:flex;align-items:center;gap:10px;font-size:12px;">
+                  <div style="width:18px;height:18px;border-radius:5px;background:${step.done ? 'var(--ink)' : 'white'};color:${step.done ? 'white' : 'var(--muted)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;border:${step.done ? 'none' : '1px solid var(--line)'};font-size:10px;font-weight:600;">
+                    ${step.done ? '\u2713' : (i+1)}
+                  </div>
+                  <span style="color:${step.done ? 'var(--muted)' : 'var(--ink)'};text-decoration:${step.done ? 'line-through' : 'none'};">${escapeHtml(step.title)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   GLOBAL SEARCH
+   ============================================================ */
+let searchQuery = '';
+let searchHighlight = 0;
+let searchResultsCache = [];
+
+function buildSearchIndex() {
+  const auth = state.auth;
+  if (!auth) return [];
+  const isAdmin = auth.persona === 'admin';
+  const items = [];
+
+  // Static nav targets
+  if (!isAdmin) {
+    items.push(
+      { type: 'page', icon: I.dashboard, title: 'Dashboard', meta: 'Module · Pipeline + onboarding summary', view: 'dashboard', keywords: 'home overview welcome' },
+      { type: 'page', icon: I.checkSquare, title: 'Onboarding', meta: 'Module 1 · 8-step checklist', view: 'onboarding', keywords: 'setup checklist progress steps quiz' },
+      { type: 'page', icon: I.hash, title: 'Lead Registration', meta: 'Module 2 · Pipeline list', view: 'leads', keywords: 'deals pipeline register claim protection' },
+      { type: 'page', icon: I.folder, title: 'Product Collaterals', meta: 'Module 3 · Searchable library', view: 'collateral', keywords: 'playbooks battlecards docs cobrand' },
+      { type: 'page', icon: I.users, title: 'Team', meta: 'User management', view: 'team', keywords: 'invite members admin seller users roles' },
+    );
+  } else {
+    items.push(
+      { type: 'page', icon: I.chart, title: 'Operations', meta: 'Admin · Dashboard', view: 'admin', keywords: 'dashboard pipeline overview' },
+      { type: 'page', icon: I.hash, title: 'All Deals', meta: 'Admin · Every deal across partners', view: 'admin-deals', keywords: 'deals pipeline registrations' },
+      { type: 'page', icon: I.users, title: 'Partners', meta: 'Admin · 20-partner directory', view: 'admin-partners', keywords: 'partners directory tier onboarding' },
+    );
+  }
+
+  // Deals — partner sees own, admin sees own seed + all partner deals
+  const allDeals = isAdmin
+    ? getAllPartners().flatMap(p => getPartnerData(p).deals.map(d => ({ ...d, partnerName: p.name, partnerId: p.id })))
+    : state.deals.map(d => ({ ...d, partnerName: state.auth.partnerName }));
+  allDeals.forEach(d => {
+    items.push({
+      type: 'deal',
+      icon: I.hash,
+      title: d.company,
+      meta: d.id + ' · ' + (d.contact || d.partnerName || '') + ' · ' + (d.country || ''),
+      view: 'leads',
+      dealId: d.id,
+      partnerId: d.partnerId,
+      keywords: [d.id, d.company, d.country || '', d.contact || '', d.stage, d.tier, d.partnerName || ''].join(' ').toLowerCase(),
+      isAdminDeal: isAdmin,
+    });
+  });
+
+  // Collaterals
+  COLLATERALS.forEach(folder => {
+    folder.items.forEach(item => {
+      items.push({
+        type: 'collateral',
+        icon: I.fileText,
+        title: item.name,
+        meta: folder.folder + ' · ' + item.type + ' · ' + item.size,
+        view: 'collateral',
+        folder: folder.folder,
+        mustRead: item.mustRead,
+        keywords: (item.name + ' ' + folder.folder + ' ' + item.type).toLowerCase(),
+      });
+    });
+  });
+
+  // Team members (partner only)
+  if (!isAdmin) {
+    state.team.forEach(m => {
+      items.push({
+        type: 'team',
+        icon: I.users,
+        title: m.name,
+        meta: m.email + ' · ' + m.role + ' · ' + m.status,
+        view: 'team',
+        keywords: (m.name + ' ' + m.email + ' ' + m.role).toLowerCase(),
+      });
+    });
+  }
+
+  // Partners (admin only)
+  if (isAdmin) {
+    getAllPartners().forEach(p => {
+      const s = partnerStats(p);
+      items.push({
+        type: 'partner',
+        icon: I.building,
+        title: p.name,
+        meta: p.tier + ' · ' + p.country + ' · ' + s.deals + ' deals · ' + s.members + ' team',
+        view: 'admin-partner-detail',
+        partnerId: p.id,
+        keywords: (p.name + ' ' + p.tier + ' ' + p.country + ' ' + (p.contact?.name || '') + ' ' + (p.psm || '')).toLowerCase(),
+      });
+    });
+  }
+
+  // Onboarding steps (partner only)
+  if (!isAdmin) {
+    state.checklist.forEach((step, i) => {
+      items.push({
+        type: 'onboarding',
+        icon: I.checkSquare,
+        title: 'Step ' + (i + 1) + ' — ' + step.title,
+        meta: step.desc + (step.done ? ' · Completed' : ' · Pending'),
+        view: 'onboarding',
+        keywords: (step.title + ' ' + step.desc).toLowerCase(),
+      });
+    });
+  }
+
+  return items;
+}
+
+function performSearch(q) {
+  const query = q.trim().toLowerCase();
+  if (!query) return [];
+  const idx = buildSearchIndex();
+  const results = [];
+  idx.forEach(item => {
+    const haystack = (item.title + ' ' + item.meta + ' ' + (item.keywords || '')).toLowerCase();
+    if (haystack.includes(query)) {
+      // simple ranking: title match scores higher than meta match
+      let score = 0;
+      if (item.title.toLowerCase().includes(query)) score += 100;
+      if (item.title.toLowerCase().startsWith(query)) score += 50;
+      if ((item.keywords || '').includes(query)) score += 20;
+      results.push({ ...item, _score: score });
+    }
+  });
+  results.sort((a, b) => b._score - a._score);
+  return results.slice(0, 30); // cap results
+}
+
+function groupResults(results) {
+  const groups = { page: [], deal: [], partner: [], collateral: [], team: [], onboarding: [] };
+  results.forEach(r => { if (groups[r.type]) groups[r.type].push(r); });
+  return groups;
+}
+
+const TYPE_LABELS = {
+  page: 'Navigate to',
+  deal: 'Deals',
+  partner: 'Partners',
+  collateral: 'Collaterals',
+  team: 'Team members',
+  onboarding: 'Onboarding steps',
+};
+
+function highlightMatch(text, query) {
+  if (!query) return escapeHtml(text);
+  const q = query.toLowerCase();
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(q);
+  if (idx === -1) return escapeHtml(text);
+  return escapeHtml(text.slice(0, idx)) +
+    '<mark class="match">' + escapeHtml(text.slice(idx, idx + query.length)) + '</mark>' +
+    escapeHtml(text.slice(idx + query.length));
+}
+
+function openSearch() {
+  if (!state.auth) return;
+  searchQuery = '';
+  searchHighlight = 0;
+  searchResultsCache = [];
+  if (document.getElementById('search-modal')) return; // already open
+
+  const m = document.createElement('div');
+  m.className = 'search-backdrop';
+  m.id = 'search-modal';
+  m.onclick = (e) => { if (e.target === m) closeSearch(); };
+  m.innerHTML = renderSearchBody();
+  document.body.appendChild(m);
+  setTimeout(() => {
+    const input = document.getElementById('search-input');
+    if (input) input.focus();
+  }, 30);
+}
+
+function closeSearch() {
+  const m = document.getElementById('search-modal');
+  if (m) m.remove();
+}
+
+function renderSearchBody() {
+  return `
+    <div class="search-modal" onclick="event.stopPropagation()">
+      <div class="search-input-wrap">
+        <span class="search-icon">${I.search}</span>
+        <input class="search-input" id="search-input" placeholder="Search deals, partners, collaterals, team..." value="${escapeHtml(searchQuery)}" oninput="updateSearch(this.value)" onkeydown="handleSearchKey(event)">
+        <span class="kbd" style="cursor:pointer;" onclick="closeSearch()">Esc</span>
+      </div>
+      <div class="search-results" id="search-results">${renderSearchResults()}</div>
+      <div class="search-footer">
+        <div style="display:flex;gap:14px;">
+          <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+          <span><span class="kbd">↵</span> open</span>
+          <span><span class="kbd">Esc</span> close</span>
+        </div>
+        <div>${searchResultsCache.length} result${searchResultsCache.length === 1 ? '' : 's'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSearchResults() {
+  if (!searchQuery.trim()) {
+    return '<div class="search-empty">Start typing to search across the portal.</div>';
+  }
+  const results = searchResultsCache;
+  if (results.length === 0) {
+    return '<div class="search-empty">No matches for "' + escapeHtml(searchQuery) + '".</div>';
+  }
+  const groups = groupResults(results);
+  const order = ['page', 'deal', 'partner', 'collateral', 'team', 'onboarding'];
+  let html = '';
+  let runningIdx = 0;
+  order.forEach(type => {
+    const items = groups[type];
+    if (!items || items.length === 0) return;
+    html += '<div class="search-group">';
+    html += '<div class="search-group-label">' + TYPE_LABELS[type] + '</div>';
+    items.forEach(item => {
+      const i = runningIdx++;
+      html += `
+        <div class="search-result ${i === searchHighlight ? 'highlighted' : ''}" onclick="executeSearchResult(${i})" onmouseenter="searchHighlight=${i}; refreshSearchHighlight();">
+          <div class="search-result-icon">${item.icon}</div>
+          <div class="search-result-content">
+            <div class="search-result-title">${highlightMatch(item.title, searchQuery)}</div>
+            <div class="search-result-meta">${highlightMatch(item.meta, searchQuery)}</div>
+          </div>
+          <div class="search-result-action">${item.type === 'page' ? 'Open' : item.type === 'deal' ? 'View deal' : item.type === 'partner' ? 'View partner' : item.type === 'collateral' ? 'Open folder' : item.type === 'team' ? 'View team' : 'Go'}</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+  });
+  return html;
+}
+
+function updateSearch(q) {
+  searchQuery = q;
+  searchResultsCache = performSearch(q);
+  searchHighlight = 0;
+  // re-render only the results + footer, keep the input focused
+  document.getElementById('search-results').innerHTML = renderSearchResults();
+  // also update footer count
+  const footer = document.querySelector('.search-footer > div:last-child');
+  if (footer) footer.textContent = searchResultsCache.length + ' result' + (searchResultsCache.length === 1 ? '' : 's');
+}
+
+function refreshSearchHighlight() {
+  document.querySelectorAll('.search-result').forEach((el, i) => {
+    el.classList.toggle('highlighted', i === searchHighlight);
+  });
+}
+
+function handleSearchKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeSearch();
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    searchHighlight = Math.min(searchResultsCache.length - 1, searchHighlight + 1);
+    refreshSearchHighlight();
+    scrollHighlightedIntoView();
+    return;
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    searchHighlight = Math.max(0, searchHighlight - 1);
+    refreshSearchHighlight();
+    scrollHighlightedIntoView();
+    return;
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (searchResultsCache.length > 0) {
+      executeSearchResult(searchHighlight);
+    }
+    return;
+  }
+}
+
+function scrollHighlightedIntoView() {
+  const el = document.querySelector('.search-result.highlighted');
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+
+function executeSearchResult(idx) {
+  const item = searchResultsCache[idx];
+  if (!item) return;
+  closeSearch();
+
+  if (item.type === 'page') {
+    navigate(item.view);
+  } else if (item.type === 'deal') {
+    if (item.isAdminDeal) {
+      // Admin clicking a deal from a partner — go to that partner's detail
+      if (item.partnerId) {
+        openPartner(item.partnerId);
+      } else {
+        navigate('admin-deals');
+      }
+    } else {
+      // Partner viewing own deal — open the deal detail
+      openDeal(item.dealId);
+    }
+  } else if (item.type === 'partner') {
+    openPartner(item.partnerId);
+  } else if (item.type === 'collateral') {
+    state.activeFolder = item.folder;
+    saveState();
+    navigate('collateral');
+  } else if (item.type === 'team') {
+    navigate('team');
+  } else if (item.type === 'onboarding') {
+    navigate('onboarding');
+  }
+}
+
+// Global keyboard listener for Cmd/Ctrl+K
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    if (state.auth) {
+      e.preventDefault();
+      openSearch();
+    }
+  }
+  if (e.key === '/' && state.auth && !document.getElementById('search-modal')) {
+    // also support '/' shortcut when not in an input
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+    e.preventDefault();
+    openSearch();
+  }
+});
+
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
+function render() {
+  const app = document.getElementById('app');
+  if (!state.auth) {
+    app.innerHTML = renderLogin();
+    return;
+  }
+  let body = '';
+  switch(state.view) {
+    case 'dashboard': body = renderDashboard(); break;
+    case 'onboarding': body = renderOnboarding(); break;
+    case 'leads': body = renderLeads(); break;
+    case 'collateral': body = renderCollateral(); break;
+    case 'team': body = renderTeam(); break;
+    case 'admin': body = renderAdmin(); break;
+    case 'admin-deals': body = renderAdminDeals(); break;
+    case 'admin-partners': body = renderAdminPartners(); break;
+    case 'admin-partner-detail': body = renderAdminPartnerDetail(); break;
+    default: body = renderDashboard();
+  }
+  app.innerHTML = renderShell(body);
+}
+
+render();
+</script>
+</body>
+</html>
