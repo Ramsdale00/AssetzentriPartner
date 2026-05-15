@@ -134,8 +134,19 @@ jobs:
               --restart unless-stopped \
               $FRONTEND_IMAGE
 
-            sleep 5
-            curl -f http://localhost:6785/ || exit 1
+            echo "Waiting for Frontend..."
+            for i in 1 2 3 4 5 6; do
+              sleep 5
+              if curl -sf http://localhost:6785/ > /dev/null 2>&1; then
+                echo "Frontend is ready!"
+                break
+              fi
+              echo "Frontend not ready yet (attempt $i/6)..."
+              if [ "$i" = "6" ]; then
+                echo "Frontend failed to start"
+                docker logs --tail 30 $FRONTEND_CONTAINER
+                exit 1
+              fi
+            done
 
-            docker image prune -f
             echo "AssetZentri deployment successful!"
