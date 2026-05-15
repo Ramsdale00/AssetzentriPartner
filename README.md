@@ -42,7 +42,7 @@ npm start
 npm run dev
 ```
 
-The backend runs on **http://localhost:3001**
+The backend runs on **http://localhost:6789**
 
 ## Frontend Setup
 
@@ -72,7 +72,7 @@ The frontend runs on **http://localhost:5173**
 
 | Service | Port |
 |---------|------|
-| Backend (Express) | 3001 |
+| Backend (Express) | 6789 |
 | Frontend (Vite) | 5173 |
 
 ## Features

@@ -11,7 +11,7 @@ INSERT INTO partners (id, name, tier, country, psm, joined_date, contact_name, c
 ('p4', 'Pacific Rim Tech', 'Silver', 'Singapore', 'Aanya Patel', '2026-01-07', 'Wei-Lin Tan', 'wtan@pacificrimtech.sg', '+65 6555 0147', FALSE),
 ('p5', 'Lumen Consulting', 'Bronze', 'India', 'Vikram Singh', '2026-04-01', 'Anjali Krishnan', 'anjali.k@lumenconsulting.in', '+91 98 5555 0173', FALSE);
 
--- Users (passwords are bcrypt of "password123")
+-- Users (passwords are bcrypt of 'password')
 INSERT INTO users (email, password_hash, name, role, persona, partner_id) VALUES
 ('alex@northwave-tech.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Alex Morgan', 'Partner Admin', 'partner', 'p1'),
 ('ops@vistrive.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Riya Chen', 'Vistrive Partner Ops', 'admin', NULL);

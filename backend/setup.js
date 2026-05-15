@@ -60,8 +60,8 @@ async function run() {
     console.log('Setting demo passwords...');
 
     const demoUsers = [
-      { email: 'alex@northwave-tech.com', password: 'partner' },
-      { email: 'ops@vistrive.com',        password: 'admin'   },
+      { email: 'alex@northwave-tech.com', password: 'password' },
+      { email: 'ops@vistrive.com',        password: 'password' },
     ];
 
     for (const u of demoUsers) {

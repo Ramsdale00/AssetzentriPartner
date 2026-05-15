@@ -9,7 +9,7 @@ RUN npm install --omit=dev
 # Copy source
 COPY . .
 
-EXPOSE 3001
+EXPOSE 6789
 
 # Default start — docker-compose overrides this with setup + start
 CMD ["node", "server.js"]
