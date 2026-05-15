@@ -1,0 +1,141 @@
+name: Deploy AssetZentri Partner Portal
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+      - name: Build and Push Backend Image
+        run: |
+          USER=$(echo "${{ secrets.GHCR_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+          BACKEND_IMAGE=ghcr.io/$USER/assetzentri-backend:latest
+          docker build -t $BACKEND_IMAGE ./backend
+          docker push $BACKEND_IMAGE
+
+      - name: Build and Push Frontend Image
+        run: |
+          USER=$(echo "${{ secrets.GHCR_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+          FRONTEND_IMAGE=ghcr.io/$USER/assetzentri-frontend:latest
+          docker build -t $FRONTEND_IMAGE ./frontend
+          docker push $FRONTEND_IMAGE
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            USER=$(echo "${{ secrets.GHCR_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+            BACKEND_IMAGE=ghcr.io/$USER/assetzentri-backend:latest
+            FRONTEND_IMAGE=ghcr.io/$USER/assetzentri-frontend:latest
+
+            BACKEND_CONTAINER=assetzentri_backend
+            FRONTEND_CONTAINER=assetzentri_frontend
+            DB_CONTAINER=assetzentri_db
+            NETWORK=assetzentri_network
+
+            echo "Login to GHCR"
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+            echo "Create network & volumes"
+            docker network create $NETWORK || true
+            docker volume create assetzentri_pgdata || true
+
+            echo "Pull latest images"
+            docker pull $BACKEND_IMAGE
+            docker pull $FRONTEND_IMAGE
+
+            echo "Ensure PostgreSQL exists"
+            if ! docker ps -a --format '{{.Names}}' | grep -q "^${DB_CONTAINER}$"; then
+              docker run -d \
+                --name $DB_CONTAINER \
+                --network $NETWORK \
+                -e POSTGRES_DB=assetzentri \
+                -e POSTGRES_USER=postgres \
+                -e POSTGRES_PASSWORD=postgres \
+                -v assetzentri_pgdata:/var/lib/postgresql/data \
+                -p 5431:5432 \
+                --restart unless-stopped \
+                postgres:15-alpine
+            else
+              echo "PostgreSQL already exists, starting if stopped"
+              docker start $DB_CONTAINER || true
+            fi
+
+            echo "Waiting for PostgreSQL..."
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if docker exec $DB_CONTAINER pg_isready -U postgres -d assetzentri > /dev/null 2>&1; then
+                echo "PostgreSQL is ready"
+                break
+              fi
+              echo "PostgreSQL not ready yet (attempt $i/10)..."
+              sleep 3
+              if [ "$i" = "10" ]; then
+                echo "PostgreSQL failed to start"
+                docker logs --tail 20 $DB_CONTAINER
+                exit 1
+              fi
+            done
+
+            echo "Restart Backend"
+            docker rm -f $BACKEND_CONTAINER 2>/dev/null || true
+            docker run -d \
+              --name $BACKEND_CONTAINER \
+              --network $NETWORK \
+              -p 6789:6789 \
+              -e PORT=6789 \
+              -e DATABASE_URL="postgresql://postgres:postgres@assetzentri_db:5432/assetzentri" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e CORS_ORIGINS="http://localhost,http://localhost:80,http://4.224.126.92:6785,https://partner.vistrivetech.com" \
+              --restart unless-stopped \
+              $BACKEND_IMAGE \
+              sh -c "npm run setup && npm start"
+
+            echo "Waiting for Backend..."
+            for i in 1 2 3 4 5 6 7 8; do
+              sleep 5
+              if curl -sf http://localhost:6789/api/health > /dev/null 2>&1; then
+                echo "Backend is ready!"
+                break
+              fi
+              echo "Backend not ready yet (attempt $i/8)..."
+              if [ "$i" = "8" ]; then
+                echo "Backend failed to start"
+                docker logs --tail 50 $BACKEND_CONTAINER
+                exit 1
+              fi
+            done
+
+            echo "Restart Frontend"
+            docker rm -f $FRONTEND_CONTAINER 2>/dev/null || true
+            docker run -d \
+              --name $FRONTEND_CONTAINER \
+              --network $NETWORK \
+              -p 6785:80 \
+              --restart unless-stopped \
+              $FRONTEND_IMAGE
+
+            sleep 5
+            curl -f http://localhost:6785/ || exit 1
+
+            docker image prune -f
+            echo "AssetZentri deployment successful!"
