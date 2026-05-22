@@ -14,11 +14,16 @@ client.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 globally
+// Handle 401 globally — but never for the auth flow itself. A 401 from
+// login/verify-magic-link is an expected outcome (bad credentials, expired or
+// already-used link) that the page handles inline; redirecting here would wipe
+// a freshly issued session and bounce the user back to the sign-in page.
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url || ''
+    const isAuthFlow = url.includes('/auth/login') || url.includes('/auth/verify-magic-link')
+    if (error.response?.status === 401 && !isAuthFlow) {
       localStorage.removeItem('az_token')
       window.location.href = '/login'
     }
