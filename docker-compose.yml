@@ -1,3 +1,4 @@
+version: '3.9'
 
 services:
 
@@ -11,7 +12,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5431:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,19 +23,22 @@ services:
 
   # ── Express API ─────────────────────────────────────────────────────────────
   backend:
-    image: ghcr.io/${GHCR_USERNAME}/assetzentri-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: assetzentri_backend
     restart: unless-stopped
     environment:
-      PORT: 6789
+      PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@db:5432/assetzentri
       JWT_SECRET: supersecretkey_change_in_production
-      CORS_ORIGINS: "http://localhost,http://localhost:80,http://localhost:5173,http://4.224.126.92:6785,https://partner.vistrivetech.com"
+      CORS_ORIGINS: "http://localhost,http://localhost:80,http://localhost:5173"
+      DEV_SENDGRID_API_KEY: ${DEV_SENDGRID_API_KEY}
+      DEV_FROM_EMAIL: ${DEV_FROM_EMAIL}
+      DEV_FROM_NAME: ${DEV_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
     ports:
-      - "6789:6789"
+      - "3001:3001"
     depends_on:
       db:
         condition: service_healthy
@@ -43,14 +47,13 @@ services:
 
   # ── React Frontend (nginx) ──────────────────────────────────────────────────
   frontend:
-    image: ghcr.io/${GHCR_USERNAME}/assetzentri-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: assetzentri_frontend
     restart: unless-stopped
     ports:
-      - "6785:80"
+      - "80:80"
     depends_on:
       - backend
 
