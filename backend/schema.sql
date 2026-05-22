@@ -91,3 +91,13 @@ CREATE TABLE IF NOT EXISTS collateral_items (
   must_read BOOLEAN DEFAULT FALSE,
   must_read_note TEXT
 );
+
+-- Magic link tokens for email-based login verification
+CREATE TABLE IF NOT EXISTS magic_link_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token VARCHAR(128) NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
