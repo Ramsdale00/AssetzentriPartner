@@ -26,7 +26,13 @@ export function AuthProvider({ children }) {
   }, [token])
 
   const login = async (email, password) => {
-    const res = await client.post('/auth/login', { email, password })
+    // With magic link flow, login just triggers the email send.
+    // The JWT is issued in verifyMagicLink after the user clicks the link.
+    await client.post('/auth/login', { email, password })
+  }
+
+  const verifyMagicLink = async (token) => {
+    const res = await client.post('/auth/verify-magic-link', { token })
     const { token: newToken, user: newUser } = res.data
     localStorage.setItem('az_token', newToken)
     setToken(newToken)
@@ -41,7 +47,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, verifyMagicLink, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

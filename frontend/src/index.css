@@ -815,7 +815,9 @@ code, pre, .mono {
   background: var(--ink);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   padding: 48px;
   color: white;
 }

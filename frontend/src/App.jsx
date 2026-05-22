@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 
 import Login from './pages/Login'
+import VerifyMagicLink from './pages/VerifyMagicLink'
 import Dashboard from './pages/Dashboard'
 import Onboarding from './pages/Onboarding'
 import Leads from './pages/Leads'
@@ -49,6 +50,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginGuard />} />
+      <Route path="/verify" element={<VerifyMagicLink />} />
       <Route path="/" element={<RootRedirect />} />
 
       {/* Partner routes */}
