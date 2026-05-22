@@ -33,6 +33,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/assetzentri
       JWT_SECRET: supersecretkey_change_in_production
       CORS_ORIGINS: "http://localhost,http://localhost:80,http://localhost:5173"
+      DEV_SENDGRID_API_KEY: ${DEV_SENDGRID_API_KEY}
+      DEV_FROM_EMAIL: ${DEV_FROM_EMAIL}
+      DEV_FROM_NAME: ${DEV_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "3001:3001"
     depends_on:
