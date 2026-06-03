@@ -1,8 +1,12 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import client from '../api/client'
+import React, { useCallback, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import Turnstile from '../components/Turnstile'
 
 export default function Signup() {
+  const navigate = useNavigate()
+  const { signup } = useAuth()
+
   const [form, setForm] = useState({
     name: '',
     company: '',
@@ -12,9 +16,10 @@ export default function Signup() {
   })
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
-  const [sent, setSent]     = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  const handleToken = useCallback((t) => setTurnstileToken(t), [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -27,70 +32,21 @@ export default function Signup() {
 
     setLoading(true)
     try {
-      await client.post('/auth/signup', {
+      // Account creation logs the user straight in, then we drop them on the
+      // partner dashboard — no second trip through their inbox.
+      await signup({
         name: form.name,
         company: form.company,
         country: form.country,
         email: form.email,
         password: form.password,
+        turnstileToken,
       })
-      setSent(true)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong. Please try again.')
-    } finally {
       setLoading(false)
     }
-  }
-
-  // ── "Check your email" confirmation screen ────────────────────────────────
-  if (sent) {
-    return (
-      <div className="login-page">
-        <div className="login-form-pane">
-          <div className="login-logo">
-            <div className="logo-icon" style={{ width: 40, height: 40, fontSize: 16 }}>AZ</div>
-            <div>
-              <div style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 600 }}>AssetZentri</div>
-              <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Partner Portal</div>
-            </div>
-          </div>
-
-          <div className="login-form">
-            {/* Mail icon */}
-            <div style={{
-              width: 56, height: 56, borderRadius: 14,
-              background: 'var(--surface-2, #f5f1ea)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 24,
-            }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #c9a96e)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <polyline points="2,4 12,13 22,4"/>
-              </svg>
-            </div>
-
-            <h1 className="login-heading" style={{ marginBottom: 8 }}>Welcome aboard</h1>
-            <p className="login-sub" style={{ marginBottom: 24 }}>
-              Your account for <strong>{form.company}</strong> is ready. We sent a sign-in link to{' '}
-              <strong>{form.email}</strong> — click it within 15 minutes to access your portal.
-            </p>
-
-            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
-              Already clicked it?{' '}
-              <Link to="/login" style={{ color: 'var(--accent, #c9a96e)', fontWeight: 500 }}>Go to sign in</Link>.
-            </p>
-          </div>
-        </div>
-
-        {/* Right pane — art */}
-        <div className="login-art-pane">
-          <div className="art-quote">
-            "One portal.<br />Every deal.<br />Zero friction."
-          </div>
-          <div className="art-attr">AssetZentri Partner Programme</div>
-        </div>
-      </div>
-    )
   }
 
   // ── Sign-up form ──────────────────────────────────────────────────────────
@@ -174,6 +130,7 @@ export default function Signup() {
                 autoComplete="new-password"
               />
             </div>
+            <Turnstile onToken={handleToken} />
             <button
               type="submit"
               className="btn btn-primary"

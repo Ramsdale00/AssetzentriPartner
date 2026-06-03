@@ -12,6 +12,19 @@ const searchRoutes = require('./routes/search');
 
 const app = express();
 
+// Trust the proxy chain (Cloudflare → nginx → app) so req.ip reflects the real
+// client IP for rate limiting and Turnstile, rather than the proxy's address.
+// Configurable via TRUST_PROXY (a hop count like "2", or "true"); defaults to 1.
+const trustProxy = process.env.TRUST_PROXY;
+app.set(
+  'trust proxy',
+  trustProxy === undefined
+    ? 1
+    : trustProxy === 'true'
+      ? true
+      : Number.isNaN(Number(trustProxy)) ? trustProxy : Number(trustProxy)
+);
+
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
