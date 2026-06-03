@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import Turnstile from '../components/Turnstile'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -15,8 +16,10 @@ export default function Signup() {
   })
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+  const handleToken = useCallback((t) => setTurnstileToken(t), [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,6 +40,7 @@ export default function Signup() {
         country: form.country,
         email: form.email,
         password: form.password,
+        turnstileToken,
       })
       navigate('/dashboard', { replace: true })
     } catch (err) {
@@ -126,6 +130,7 @@ export default function Signup() {
                 autoComplete="new-password"
               />
             </div>
+            <Turnstile onToken={handleToken} />
             <button
               type="submit"
               className="btn btn-primary"

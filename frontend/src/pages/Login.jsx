@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import client from '../api/client'
+import Turnstile from '../components/Turnstile'
 
 export default function Login() {
   const [email, setEmail]       = useState('')
@@ -8,13 +9,16 @@ export default function Login() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [sent, setSent]         = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+
+  const handleToken = useCallback((t) => setTurnstileToken(t), [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await client.post('/auth/login', { email, password })
+      await client.post('/auth/login', { email, password, turnstileToken })
       setSent(true)
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password')
@@ -137,6 +141,7 @@ export default function Login() {
                 autoComplete="current-password"
               />
             </div>
+            <Turnstile onToken={handleToken} />
             <button
               type="submit"
               className="btn btn-primary"

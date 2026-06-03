@@ -6,6 +6,15 @@ const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const pool = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
+const { verifyTurnstile } = require('../middleware/turnstile');
+
+// Throttle auth endpoints per IP to blunt brute-force and signup/login spam.
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: 'Too many attempts. Please wait a few minutes and try again.',
+});
 
 // Configure SendGrid
 sgMail.setApiKey(process.env.DEV_SENDGRID_API_KEY);
@@ -95,7 +104,7 @@ async function sendMagicLinkEmail(toEmail, toName, token) {
 
 // ─── POST /api/auth/login ──────────────────────────────────────────────────────
 // Validates email + password, then sends a magic link instead of returning a JWT.
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, verifyTurnstile, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -158,7 +167,7 @@ const DEFAULT_CHECKLIST_STEPS = [
   { num: 8, title: 'Submit territory plan', desc: 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.' },
 ];
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, verifyTurnstile, async (req, res) => {
   const { name, email, password, company, country } = req.body;
 
   if (!name || !email || !password || !company || !country) {
@@ -241,7 +250,7 @@ router.post('/signup', async (req, res) => {
 
 // ─── POST /api/auth/verify-magic-link ─────────────────────────────────────────
 // Validates the token from the email link and returns a JWT session.
-router.post('/verify-magic-link', async (req, res) => {
+router.post('/verify-magic-link', authLimiter, async (req, res) => {
   const { token } = req.body;
   if (!token) {
     return res.status(400).json({ error: 'Token is required' });

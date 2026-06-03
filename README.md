@@ -96,3 +96,34 @@ The frontend runs on **http://localhost:5173**
 - JWT authentication with auto-redirect by persona
 - Toast notifications
 - Responsive layout
+
+## Security & Anti-Spam
+
+The auth endpoints (`/api/auth/login`, `/api/auth/signup`, `/api/auth/verify-magic-link`)
+are protected with free, layered defenses:
+
+### 1. Cloudflare Turnstile (free CAPTCHA alternative)
+Stops bots/spam on the sign-in and sign-up forms.
+
+1. In the [Cloudflare dashboard](https://dash.cloudflare.com) → **Turnstile**, create a
+   free widget for your domain. You get a **Site key** and a **Secret key**.
+2. Backend: set `TURNSTILE_SECRET_KEY` in `backend/.env`.
+3. Frontend: set `VITE_TURNSTILE_SITE_KEY` in `frontend/.env`, then rebuild.
+
+If these are left blank (e.g. local dev), Turnstile is skipped and the app works
+normally — so it's safe to enable only in production.
+
+### 2. Rate limiting
+Each IP is limited to 20 auth requests per 15 minutes (in-memory, zero-dependency),
+which blunts brute-force and signup/login spam. Excess requests get `429 Too Many
+Requests`. Behind a proxy, set `TRUST_PROXY` so the real client IP is used.
+
+### 3. Cloudflare edge (recommended, dashboard-only — no code)
+Put the site behind Cloudflare and enable, for free:
+- **Proxy (orange cloud)** on the DNS records so traffic flows through Cloudflare.
+- **WAF Managed Rules** and **Bot Fight Mode** (Security → Bots).
+- **Rate limiting rules** on `/api/auth/*` (Security → WAF → Rate limiting rules).
+- **"Under Attack" mode** to toggle on during an active attack.
+
+When proxied through Cloudflare (and nginx), set `TRUST_PROXY` in `backend/.env`
+(e.g. `TRUST_PROXY=2`) so per-IP limits apply to the visitor, not the proxy.
