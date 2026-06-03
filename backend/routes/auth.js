@@ -143,6 +143,102 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ─── POST /api/auth/signup ─────────────────────────────────────────────────────
+// Self-service partner registration. Creates a partner organisation plus its
+// first Partner Admin user, seeds the default onboarding checklist, then sends
+// a magic link so the new user signs in through the same secure flow.
+const DEFAULT_CHECKLIST_STEPS = [
+  { num: 1, title: 'Complete company profile', desc: 'Fill in your company details, logo, and contact information in the partner profile section.' },
+  { num: 2, title: 'Upload company logo', desc: 'Upload a high-resolution version of your company logo for co-branded materials.' },
+  { num: 3, title: 'Accept Partner Agreement', desc: 'Review and digitally sign the AssetZentri Partner Programme Agreement.' },
+  { num: 4, title: 'Add team members', desc: 'Invite your sales team to the partner portal so they can access resources and register deals.' },
+  { num: 5, title: 'Watch product demo video', desc: 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.' },
+  { num: 6, title: 'Download and review sales kit', desc: 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.' },
+  { num: 7, title: 'Pass partner knowledge check', desc: 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.' },
+  { num: 8, title: 'Submit territory plan', desc: 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.' },
+];
+
+router.post('/signup', async (req, res) => {
+  const { name, email, password, company, country } = req.body;
+
+  if (!name || !email || !password || !company || !country) {
+    return res.status(400).json({ error: 'Name, email, password, company, and country are required.' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const clientConn = await pool.connect();
+  try {
+    // Reject duplicate accounts up front.
+    const existing = await clientConn.query('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
+    }
+
+    await clientConn.query('BEGIN');
+
+    // Generate a unique partner id that fits VARCHAR(10): "p" + 9 hex chars.
+    const partnerId = `p${crypto.randomBytes(5).toString('hex').slice(0, 9)}`;
+
+    await clientConn.query(
+      `INSERT INTO partners (id, name, tier, country, joined_date, contact_name, contact_email, is_custom)
+       VALUES ($1, $2, 'Bronze', $3, CURRENT_DATE, $4, $5, TRUE)`,
+      [partnerId, company.trim(), country.trim(), name.trim(), normalizedEmail]
+    );
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const userResult = await clientConn.query(
+      `INSERT INTO users (email, password_hash, name, role, persona, partner_id)
+       VALUES ($1, $2, $3, 'Partner Admin', 'partner', $4)
+       RETURNING id, name, email`,
+      [normalizedEmail, passwordHash, name.trim(), partnerId]
+    );
+    const newUser = userResult.rows[0];
+
+    // Seed the default onboarding checklist for the new partner.
+    for (const step of DEFAULT_CHECKLIST_STEPS) {
+      await clientConn.query(
+        `INSERT INTO checklist_steps (partner_id, step_number, title, description, done) VALUES ($1, $2, $3, $4, FALSE)`,
+        [partnerId, step.num, step.title, step.desc]
+      );
+    }
+
+    // Issue a one-time magic link so the new account signs in via the same flow.
+    const rawToken = crypto.randomBytes(48).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await clientConn.query(
+      'INSERT INTO magic_link_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [newUser.id, rawToken, expiresAt]
+    );
+
+    await clientConn.query('COMMIT');
+
+    // Send the email outside the transaction; a delivery hiccup shouldn't roll
+    // back a successfully created account.
+    try {
+      await sendMagicLinkEmail(newUser.email, newUser.name, rawToken);
+    } catch (mailErr) {
+      console.error('Signup magic link email error:', mailErr);
+    }
+
+    return res.status(201).json({ message: 'Account created — check your email for a sign-in link.' });
+  } catch (err) {
+    await clientConn.query('ROLLBACK').catch(() => {});
+    // Unique-violation safety net in case of a race between the check and insert.
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
+    }
+    console.error('Signup error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  } finally {
+    clientConn.release();
+  }
+});
+
 // ─── POST /api/auth/verify-magic-link ─────────────────────────────────────────
 // Validates the token from the email link and returns a JWT session.
 router.post('/verify-magic-link', async (req, res) => {
@@ -152,42 +248,55 @@ router.post('/verify-magic-link', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      `SELECT mlt.*, u.id AS uid, u.email, u.name, u.role, u.persona, u.partner_id
-       FROM magic_link_tokens mlt
-       JOIN users u ON u.id = mlt.user_id
-       WHERE mlt.token = $1`,
+    // Atomically claim the token: flip used → TRUE only if it is currently
+    // unused and unexpired, all in a single statement. This closes the race
+    // where two near-simultaneous requests (e.g. a double-fired client) could
+    // both pass a separate "is it used?" check and each be issued a session.
+    // Only the request that actually flips the row gets a row back.
+    const claim = await pool.query(
+      `UPDATE magic_link_tokens
+       SET used = TRUE
+       WHERE token = $1 AND used = FALSE AND expires_at > NOW()
+       RETURNING user_id`,
       [token]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid or expired link. Please sign in again.' });
-    }
+    if (claim.rows.length === 0) {
+      // The claim failed — figure out why so we can return a helpful message.
+      const existing = await pool.query(
+        'SELECT used, expires_at FROM magic_link_tokens WHERE token = $1',
+        [token]
+      );
 
-    const row = result.rows[0];
-
-    if (row.used) {
-      return res.status(401).json({ error: 'This link has already been used. Please sign in again.' });
-    }
-
-    if (new Date() > new Date(row.expires_at)) {
+      if (existing.rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid or expired link. Please sign in again.' });
+      }
+      if (existing.rows[0].used) {
+        return res.status(401).json({ error: 'This link has already been used. Please sign in again.' });
+      }
       return res.status(401).json({ error: 'This link has expired. Please sign in again.' });
     }
 
-    // Mark token as used (single-use enforcement)
-    await pool.query(
-      'UPDATE magic_link_tokens SET used = TRUE WHERE id = $1',
-      [row.id]
+    // Token successfully claimed — load the user and issue a session.
+    const userResult = await pool.query(
+      'SELECT id, email, name, role, persona, partner_id FROM users WHERE id = $1',
+      [claim.rows[0].user_id]
     );
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or expired link. Please sign in again.' });
+    }
+
+    const u = userResult.rows[0];
 
     // Issue a JWT session — same shape as before
     const payload = {
-      id: row.uid,
-      email: row.email,
-      name: row.name,
-      role: row.role,
-      persona: row.persona,
-      partner_id: row.partner_id,
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      persona: u.persona,
+      partner_id: u.partner_id,
     };
 
     const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });

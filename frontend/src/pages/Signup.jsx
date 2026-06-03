@@ -2,22 +2,41 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import client from '../api/client'
 
-export default function Login() {
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [sent, setSent]         = useState(false)
+export default function Signup() {
+  const [form, setForm] = useState({
+    name: '',
+    company: '',
+    country: '',
+    email: '',
+    password: '',
+  })
+  const [error, setError]   = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent]     = useState(false)
+
+  const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters long.')
+      return
+    }
+
     setLoading(true)
     try {
-      await client.post('/auth/login', { email, password })
+      await client.post('/auth/signup', {
+        name: form.name,
+        company: form.company,
+        country: form.country,
+        email: form.email,
+        password: form.password,
+      })
       setSent(true)
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid email or password')
+      setError(err.response?.data?.error || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -50,34 +69,15 @@ export default function Login() {
               </svg>
             </div>
 
-            <h1 className="login-heading" style={{ marginBottom: 8 }}>Check your email</h1>
+            <h1 className="login-heading" style={{ marginBottom: 8 }}>Welcome aboard</h1>
             <p className="login-sub" style={{ marginBottom: 24 }}>
-              We sent a sign-in link to <strong>{email}</strong>.<br />
-              Click it within 15 minutes to access your portal.
+              Your account for <strong>{form.company}</strong> is ready. We sent a sign-in link to{' '}
+              <strong>{form.email}</strong> — click it within 15 minutes to access your portal.
             </p>
 
-            <div style={{
-              background: 'var(--surface-2, #fafaf8)',
-              border: '1px solid var(--line, #e8e4dc)',
-              borderRadius: 10,
-              padding: '14px 16px',
-              fontSize: 13,
-              color: 'var(--muted)',
-              lineHeight: 1.6,
-              marginBottom: 28,
-            }}>
-              Didn't receive it? Check your spam folder, or{' '}
-              <button
-                onClick={() => { setSent(false); setError('') }}
-                style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent, #c9a96e)', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}
-              >
-                try again
-              </button>
-              .
-            </div>
-
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 0 }}>
-              The link is single-use and expires after 15 minutes for security.
+            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+              Already clicked it?{' '}
+              <Link to="/login" style={{ color: 'var(--accent, #c9a96e)', fontWeight: 500 }}>Go to sign in</Link>.
             </p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function Login() {
     )
   }
 
-  // ── Login form ────────────────────────────────────────────────────────────
+  // ── Sign-up form ──────────────────────────────────────────────────────────
   return (
     <div className="login-page">
       {/* Left pane — form */}
@@ -107,19 +107,55 @@ export default function Login() {
         </div>
 
         <div className="login-form">
-          <h1 className="login-heading">Sign in.</h1>
-          <p className="login-sub">Enter your credentials — we'll email you a secure sign-in link.</p>
+          <h1 className="login-heading">Become a partner.</h1>
+          <p className="login-sub">Create your account to register deals, access collateral, and grow with AssetZentri.</p>
 
           {error && <div className="login-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Email address</label>
+              <label className="form-label">Your name</label>
+              <input
+                className="form-input"
+                type="text"
+                value={form.name}
+                onChange={update('name')}
+                placeholder="Alex Morgan"
+                required
+                autoComplete="name"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Company name</label>
+              <input
+                className="form-input"
+                type="text"
+                value={form.company}
+                onChange={update('company')}
+                placeholder="Northwave Technologies"
+                required
+                autoComplete="organization"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Country</label>
+              <input
+                className="form-input"
+                type="text"
+                value={form.country}
+                onChange={update('country')}
+                placeholder="United Kingdom"
+                required
+                autoComplete="country-name"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Work email</label>
               <input
                 className="form-input"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.email}
+                onChange={update('email')}
                 placeholder="you@company.com"
                 required
                 autoComplete="email"
@@ -130,11 +166,12 @@ export default function Login() {
               <input
                 className="form-input"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                value={form.password}
+                onChange={update('password')}
+                placeholder="At least 8 characters"
                 required
-                autoComplete="current-password"
+                minLength={8}
+                autoComplete="new-password"
               />
             </div>
             <button
@@ -143,13 +180,13 @@ export default function Login() {
               style={{ width: '100%', justifyContent: 'center', padding: '11px 20px', fontSize: 14, marginTop: 8 }}
               disabled={loading}
             >
-              {loading ? 'Sending link...' : 'Send sign-in link'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
           <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 20, textAlign: 'center' }}>
-            New to AssetZentri?{' '}
-            <Link to="/signup" style={{ color: 'var(--accent, #c9a96e)', fontWeight: 500 }}>Create an account</Link>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--accent, #c9a96e)', fontWeight: 500 }}>Sign in</Link>
           </p>
         </div>
       </div>
