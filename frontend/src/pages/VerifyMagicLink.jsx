@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -10,7 +10,14 @@ export default function VerifyMagicLink() {
   const [status, setStatus] = useState('verifying') // 'verifying' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
 
+  // Single-use tokens must only be verified once. StrictMode (dev) and any
+  // re-render would otherwise fire a second request that fails as "already used".
+  const hasVerified = useRef(false)
+
   useEffect(() => {
+    if (hasVerified.current) return
+    hasVerified.current = true
+
     const token = searchParams.get('token')
 
     if (!token) {
