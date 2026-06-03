@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import VerifyMagicLink from './pages/VerifyMagicLink'
 import Dashboard from './pages/Dashboard'
 import Onboarding from './pages/Onboarding'
@@ -50,6 +51,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginGuard />} />
+      <Route path="/signup" element={<SignupGuard />} />
       <Route path="/verify" element={<VerifyMagicLink />} />
       <Route path="/" element={<RootRedirect />} />
 
@@ -100,6 +102,16 @@ function LoginGuard() {
     return <Navigate to="/dashboard" replace />
   }
   return <Login />
+}
+
+function SignupGuard() {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  if (user) {
+    if (user.persona === 'admin') return <Navigate to="/admin" replace />
+    return <Navigate to="/dashboard" replace />
+  }
+  return <Signup />
 }
 
 export default function App() {

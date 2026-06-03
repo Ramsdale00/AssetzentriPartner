@@ -1,6 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+
+// Module-level cache of in-flight / completed verification promises, keyed by
+// token. A per-component useRef does NOT survive React StrictMode's
+// mount → unmount → remount cycle (a fresh ref is created on each mount), so
+// the token gets verified twice: the first call consumes the single-use token
+// and logs the user in, while the second comes back "already used" and shows
+// an error. Caching the promise at module scope guarantees both invocations
+// share the exact same network call and resolve to the same result.
+const verificationCache = new Map()
 
 export default function VerifyMagicLink() {
   const [searchParams] = useSearchParams()
@@ -10,14 +19,7 @@ export default function VerifyMagicLink() {
   const [status, setStatus] = useState('verifying') // 'verifying' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Single-use tokens must only be verified once. StrictMode (dev) and any
-  // re-render would otherwise fire a second request that fails as "already used".
-  const hasVerified = useRef(false)
-
   useEffect(() => {
-    if (hasVerified.current) return
-    hasVerified.current = true
-
     const token = searchParams.get('token')
 
     if (!token) {
@@ -26,7 +28,15 @@ export default function VerifyMagicLink() {
       return
     }
 
-    verifyMagicLink(token)
+    // Reuse the in-flight promise for this token if one already exists, so a
+    // StrictMode remount (or any re-render) never triggers a second request.
+    let request = verificationCache.get(token)
+    if (!request) {
+      request = verifyMagicLink(token)
+      verificationCache.set(token, request)
+    }
+
+    request
       .then((user) => {
         // Redirect based on persona — same as the original login flow
         if (user.persona === 'admin') {
