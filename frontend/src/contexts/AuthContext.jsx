@@ -40,6 +40,17 @@ export function AuthProvider({ children }) {
     return newUser
   }
 
+  const signup = async (details) => {
+    // Self-service partner registration. The backend creates the account and
+    // returns a session immediately, so we log the user straight in.
+    const res = await client.post('/auth/signup', details)
+    const { token: newToken, user: newUser } = res.data
+    localStorage.setItem('az_token', newToken)
+    setToken(newToken)
+    setUser(newUser)
+    return newUser
+  }
+
   const logout = () => {
     localStorage.removeItem('az_token')
     setToken(null)
@@ -47,7 +58,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, verifyMagicLink, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, signup, verifyMagicLink, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

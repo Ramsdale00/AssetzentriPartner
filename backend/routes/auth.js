@@ -207,25 +207,25 @@ router.post('/signup', async (req, res) => {
       );
     }
 
-    // Issue a one-time magic link so the new account signs in via the same flow.
-    const rawToken = crypto.randomBytes(48).toString('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await clientConn.query(
-      'INSERT INTO magic_link_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
-      [newUser.id, rawToken, expiresAt]
-    );
+    // Issue a session immediately. The account was just created with a
+    // password the user chose in this same request, so we log them straight in
+    // rather than emailing a separate magic link (which is brittle — e.g. the
+    // /login cleanup can delete a freshly-issued unused token) and forcing a
+    // second round-trip through their inbox.
+    const sessionPayload = {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      role: 'Partner Admin',
+      persona: 'partner',
+      partner_id: partnerId,
+    };
 
     await clientConn.query('COMMIT');
 
-    // Send the email outside the transaction; a delivery hiccup shouldn't roll
-    // back a successfully created account.
-    try {
-      await sendMagicLinkEmail(newUser.email, newUser.name, rawToken);
-    } catch (mailErr) {
-      console.error('Signup magic link email error:', mailErr);
-    }
+    const jwtToken = jwt.sign(sessionPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    return res.status(201).json({ message: 'Account created — check your email for a sign-in link.' });
+    return res.status(201).json({ token: jwtToken, user: sessionPayload });
   } catch (err) {
     await clientConn.query('ROLLBACK').catch(() => {});
     // Unique-violation safety net in case of a race between the check and insert.
