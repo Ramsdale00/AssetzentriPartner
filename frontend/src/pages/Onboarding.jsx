@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 
@@ -28,8 +28,81 @@ function Field({ label, children, hint }) {
   )
 }
 
+// Read an image file and downscale it to a reasonable size, returning a PNG
+// data URL we can store directly in logo_url (keeps the payload small).
+function fileToLogoDataUrl(file, maxDim = 320) {
+  return new Promise((resolve, reject) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      reject(new Error('Please choose an image file (PNG, JPG, or SVG).'))
+      return
+    }
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Could not read that file.'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('That file is not a valid image.'))
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        const w = Math.max(1, Math.round(img.width * scale))
+        const h = Math.max(1, Math.round(img.height * scale))
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/png'))
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+// Logo picker: shows the current logo (if any) and lets the partner upload a
+// new image file. `value`/`onChange` carry the logo as a URL or data URL.
+function LogoField({ value, onChange, addToast }) {
+  const [busy, setBusy] = useState(false)
+  const inputRef = useRef(null)
+
+  const handleFile = async (e) => {
+    const file = e.target.files && e.target.files[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file) return
+    setBusy(true)
+    try {
+      onChange(await fileToLogoDataUrl(file))
+    } catch (err) {
+      addToast?.(err.message || 'Could not load that image.', 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div>
+      {value && (
+        <div style={{ marginBottom: 10, padding: 16, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface-2, #fafaf8)', textAlign: 'center' }}>
+          <img src={value} alt="Company logo" style={{ maxHeight: 80, maxWidth: '100%' }} onError={(e) => { e.target.style.display = 'none' }} />
+          <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 8 }}>Current logo</div>
+        </div>
+      )}
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => inputRef.current?.click()} disabled={busy}>
+          {busy ? 'Processing…' : value ? 'Replace logo' : 'Upload logo'}
+        </button>
+        {value && (
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => onChange('')} disabled={busy}>
+            Remove
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Step 1: Company profile ───────────────────────────────────────────────────
-function CompanyProfileBody({ profile, saveProfile, step }) {
+function CompanyProfileBody({ profile, saveProfile, step, addToast }) {
   const [form, setForm] = useState({
     name: profile?.name || '',
     website: profile?.website || '',
@@ -38,6 +111,7 @@ function CompanyProfileBody({ profile, saveProfile, step }) {
     contact_email: profile?.contact_email || '',
     contact_phone: profile?.contact_phone || '',
     description: profile?.description || '',
+    logo_url: profile?.logo_url || '',
   })
   const [saving, setSaving] = useState(false)
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -58,6 +132,9 @@ function CompanyProfileBody({ profile, saveProfile, step }) {
         <Field label="Primary contact name"><input className="form-input" value={form.contact_name} onChange={set('contact_name')} /></Field>
         <Field label="Contact email"><input className="form-input" type="email" value={form.contact_email} onChange={set('contact_email')} /></Field>
         <Field label="Contact phone"><input className="form-input" value={form.contact_phone} onChange={set('contact_phone')} /></Field>
+        <Field label="Company logo" hint="Upload your logo (PNG or SVG, transparent background recommended).">
+          <LogoField value={form.logo_url} onChange={(v) => setForm((f) => ({ ...f, logo_url: v }))} addToast={addToast} />
+        </Field>
         <Field label="Company description" hint="A short blurb used on co-branded materials.">
           <textarea className="form-textarea" rows={3} value={form.description} onChange={set('description')} />
         </Field>
@@ -72,7 +149,7 @@ function CompanyProfileBody({ profile, saveProfile, step }) {
 }
 
 // ── Step 2: Company logo ──────────────────────────────────────────────────────
-function LogoBody({ profile, saveProfile, step }) {
+function LogoBody({ profile, saveProfile, step, addToast }) {
   const [logoUrl, setLogoUrl] = useState(profile?.logo_url || '')
   const [saving, setSaving] = useState(false)
 
@@ -86,15 +163,12 @@ function LogoBody({ profile, saveProfile, step }) {
   return (
     <form onSubmit={submit}>
       <div className="modal-body">
-        <Field label="Logo image URL" hint="Paste a link to a hosted logo image (PNG or SVG, transparent background recommended).">
-          <input className="form-input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…/logo.png" />
+        <Field label="Company logo" hint="Upload a high-resolution logo image (PNG or SVG, transparent background recommended).">
+          <LogoField value={logoUrl} onChange={setLogoUrl} addToast={addToast} />
         </Field>
-        {logoUrl && (
-          <div style={{ marginTop: 8, padding: 16, border: '1px solid var(--line)', borderRadius: 10, background: 'var(--surface-2, #fafaf8)', textAlign: 'center' }}>
-            <img src={logoUrl} alt="Logo preview" style={{ maxHeight: 80, maxWidth: '100%' }} onError={(e) => { e.target.style.display = 'none' }} />
-            <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 8 }}>Preview</div>
-          </div>
-        )}
+        <Field label="…or paste a logo image URL" hint="If your logo is already hosted online, paste its link here instead.">
+          <input className="form-input" value={logoUrl?.startsWith('data:') ? '' : logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…/logo.png" />
+        </Field>
       </div>
       <div className="modal-footer">
         <button type="submit" className="btn btn-primary" disabled={saving}>
@@ -299,8 +373,8 @@ function StepModal({ step, profile, saveProfile, acceptAgreement, markStep, addT
       return <div className="modal-body"><div className="loading-center"><div className="spinner" /></div></div>
     }
     switch (step.step_number) {
-      case 1: return <CompanyProfileBody profile={profile} saveProfile={saveProfile} step={step} />
-      case 2: return <LogoBody profile={profile} saveProfile={saveProfile} step={step} />
+      case 1: return <CompanyProfileBody profile={profile} saveProfile={saveProfile} step={step} addToast={addToast} />
+      case 2: return <LogoBody profile={profile} saveProfile={saveProfile} step={step} addToast={addToast} />
       case 3: return <AgreementBody profile={profile} acceptAgreement={acceptAgreement} />
       case 4: return <LinkOutBody text="Invite your sales team so they can register deals and access partner resources." cta="Go to Team" to="/team" navigate={navigate} closeModal={onClose} />
       case 5: return <VideoBody markStep={markStep} step={step} />

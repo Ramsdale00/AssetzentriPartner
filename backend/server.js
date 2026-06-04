@@ -41,8 +41,9 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Logos are uploaded as downscaled base64 data URLs, so allow a larger body.
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
