@@ -9,6 +9,7 @@ const teamRoutes = require('./routes/team');
 const collateralsRoutes = require('./routes/collaterals');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
+const { ensureDemoAdmin } = require('./demoAdmin');
 
 const app = express();
 
@@ -67,4 +68,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 6789;
 app.listen(PORT, () => {
   console.log(`AssetZentri backend running on http://localhost:${PORT}`);
+  // Ensure the hardcoded demo partner admin exists (idempotent, non-fatal).
+  ensureDemoAdmin();
 });
