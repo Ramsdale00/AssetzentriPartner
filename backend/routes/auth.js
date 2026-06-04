@@ -8,12 +8,20 @@ const pool = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const { verifyTurnstile } = require('../middleware/turnstile');
+const { DEMO_ADMIN_EMAIL, DEMO_ADMIN_ENABLED } = require('../demoAdmin');
 
 // Throttle auth endpoints per IP to blunt brute-force and signup/login spam.
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
   message: 'Too many attempts. Please wait a few minutes and try again.',
+});
+
+// More generous limiter for the read-only company typeahead.
+const suggestLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100,
+  message: 'Too many requests. Please slow down and try again shortly.',
 });
 
 // Configure SendGrid
@@ -126,6 +134,20 @@ router.post('/login', authLimiter, verifyTurnstile, async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Hardcoded demo admin bypasses the magic-link email and logs in directly.
+    if (DEMO_ADMIN_ENABLED && user.email.toLowerCase() === DEMO_ADMIN_EMAIL) {
+      const payload = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        persona: user.persona,
+        partner_id: user.partner_id,
+      };
+      const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+      return res.json({ token: jwtToken, user: payload });
+    }
+
     // Credentials are valid — generate a one-time magic link token
     const rawToken = crypto.randomBytes(48).toString('hex'); // 96-char hex string
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
@@ -148,6 +170,27 @@ router.post('/login', authLimiter, verifyTurnstile, async (req, res) => {
     return res.json({ message: 'Check your email — a sign-in link has been sent.' });
   } catch (err) {
     console.error('Login error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ─── GET /api/auth/companies ──────────────────────────────────────────────────
+// Typeahead for the sign-up form: returns existing partner company names that
+// match the query, so users can spot (and avoid) duplicate registrations.
+router.get('/companies', suggestLimiter, async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (q.length < 2) {
+    return res.json([]);
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT name FROM partners WHERE name ILIKE $1 ORDER BY name ASC LIMIT 8`,
+      [`%${q}%`]
+    );
+    return res.json(result.rows.map((r) => r.name));
+  } catch (err) {
+    console.error('Company suggestions error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
@@ -179,12 +222,20 @@ router.post('/signup', authLimiter, verifyTurnstile, async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
+  const companyName = company.trim();
+
   const clientConn = await pool.connect();
   try {
     // Reject duplicate accounts up front.
     const existing = await clientConn.query('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
+    }
+
+    // Reject duplicate company names (case-insensitive) so each partner org is unique.
+    const dupCompany = await clientConn.query('SELECT id FROM partners WHERE LOWER(name) = LOWER($1)', [companyName]);
+    if (dupCompany.rows.length > 0) {
+      return res.status(409).json({ error: 'A company with this name is already registered. Please use a different name, or sign in if this is your company.' });
     }
 
     await clientConn.query('BEGIN');
@@ -195,7 +246,7 @@ router.post('/signup', authLimiter, verifyTurnstile, async (req, res) => {
     await clientConn.query(
       `INSERT INTO partners (id, name, tier, country, joined_date, contact_name, contact_email, is_custom)
        VALUES ($1, $2, 'Bronze', $3, CURRENT_DATE, $4, $5, TRUE)`,
-      [partnerId, company.trim(), country.trim(), name.trim(), normalizedEmail]
+      [partnerId, companyName, country.trim(), name.trim(), normalizedEmail]
     );
 
     const passwordHash = await bcrypt.hash(password, 10);

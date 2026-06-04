@@ -65,8 +65,14 @@ The frontend runs on **http://localhost:5173**
 
 | Email | Password | Role |
 |-------|----------|------|
-| alex@northwave-tech.com | password | Partner Admin (Northwave Technologies, Gold) |
-| ops@vistrive.com | password | Admin / Partner Ops (Vistrive) |
+| partner-admin@assetzentri.com | PartnerAdmin123! | Partner Admin — **direct login, no magic link** |
+| alex@northwave-tech.com | password | Partner Admin (Northwave Technologies, Gold) — magic link |
+| ops@vistrive.com | password | Admin / Partner Ops (Vistrive) — magic link |
+
+The **`partner-admin@assetzentri.com`** account is hardcoded and logs in directly
+(email + password, no email round-trip). It's ensured in the database on startup,
+and its credentials can be changed via `DEMO_ADMIN_EMAIL` / `DEMO_ADMIN_PASSWORD`
+(or disabled with `DISABLE_DEMO_ADMIN=true`). See `backend/.env.example`.
 
 ## Ports
 

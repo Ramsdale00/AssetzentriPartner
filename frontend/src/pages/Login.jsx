@@ -1,9 +1,12 @@
 import React, { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
-import client from '../api/client'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import Turnstile from '../components/Turnstile'
 
 export default function Login() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
@@ -18,7 +21,12 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      await client.post('/auth/login', { email, password, turnstileToken })
+      const result = await login(email, password, turnstileToken)
+      if (result.loggedIn) {
+        // Direct login (demo admin) — skip the magic-link screen.
+        navigate(result.user.persona === 'admin' ? '/admin' : '/dashboard', { replace: true })
+        return
+      }
       setSent(true)
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password')

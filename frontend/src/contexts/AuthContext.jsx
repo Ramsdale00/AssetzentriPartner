@@ -25,10 +25,18 @@ export function AuthProvider({ children }) {
     }
   }, [token])
 
-  const login = async (email, password) => {
-    // With magic link flow, login just triggers the email send.
-    // The JWT is issued in verifyMagicLink after the user clicks the link.
-    await client.post('/auth/login', { email, password })
+  const login = async (email, password, turnstileToken) => {
+    // Normally login just triggers the magic-link email and the JWT is issued in
+    // verifyMagicLink. The hardcoded demo admin, however, is logged in directly
+    // and the backend returns a token here — store it and report that we're in.
+    const res = await client.post('/auth/login', { email, password, turnstileToken })
+    if (res.data?.token) {
+      localStorage.setItem('az_token', res.data.token)
+      setToken(res.data.token)
+      setUser(res.data.user)
+      return { loggedIn: true, user: res.data.user }
+    }
+    return { loggedIn: false }
   }
 
   const verifyMagicLink = async (token) => {
