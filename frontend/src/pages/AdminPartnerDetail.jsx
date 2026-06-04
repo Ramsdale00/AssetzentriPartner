@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { StagePill, TierPill, RolePill } from '../components/Pill'
+import Breadcrumbs from '../components/Breadcrumbs'
 
 function formatCurrency(val) {
   if (!val) return '$0'
@@ -46,6 +47,8 @@ export default function AdminPartnerDetail({ addToast }) {
 
   return (
     <div style={{ animation: 'fadeUp 0.2s ease' }}>
+      <Breadcrumbs items={[{ label: 'Partners', to: '/admin/partners' }, { label: data.name }]} />
+
       <button className="btn btn-ghost btn-sm" style={{ marginBottom: 16 }} onClick={() => navigate('/admin/partners')}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         Back to Partners

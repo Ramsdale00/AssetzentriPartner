@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import StatCard from '../components/StatCard'
 import { StagePill, TierPill } from '../components/Pill'
+import { rowActivation } from '../utils/a11y'
 
 function formatCurrency(val) {
   if (!val) return '$0'
@@ -129,8 +130,9 @@ export default function AdminOps({ addToast }) {
               return (
                 <div
                   key={p.id}
+                  className="clickable-row"
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--line)', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/partners/${p.id}`)}
+                  {...rowActivation(() => navigate(`/admin/partners/${p.id}`), `View partner ${p.name}`)}
                 >
                   <div>
                     <div style={{ fontWeight: 500, fontSize: 13 }}>{p.name}</div>

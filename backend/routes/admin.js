@@ -2,9 +2,22 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const { requireAdmin } = require('../middleware/auth');
+const { notifyPartner } = require('../notify');
 
 function calcAnnualValue(devices, tier) {
   return devices * (tier === 'Premium' ? 8 : 4) * 12;
+}
+
+async function recordStageChange(dealId, fromStage, toStage, { reason, note, actor } = {}) {
+  try {
+    await pool.query(
+      `INSERT INTO deal_stage_history (deal_id, from_stage, to_stage, reason, note, actor)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [dealId, fromStage || null, toStage, reason || null, note || null, actor || null]
+    );
+  } catch (err) {
+    console.error('recordStageChange error:', err.message);
+  }
 }
 
 // GET /api/admin/deals
@@ -85,7 +98,7 @@ router.post('/partners', requireAdmin, async (req, res) => {
       { num: 4, title: 'Add team members', desc: 'Invite your sales team to the partner portal so they can access resources and register deals.' },
       { num: 5, title: 'Watch product demo video', desc: 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.' },
       { num: 6, title: 'Download and review sales kit', desc: 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.' },
-      { num: 7, title: 'Pass partner knowledge check', desc: 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.' },
+      { num: 7, title: 'Pass partner knowledge check', desc: 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.' },
       { num: 8, title: 'Submit territory plan', desc: 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.' }
     ];
 
@@ -168,6 +181,134 @@ router.get('/partners/:id', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('Admin get partner detail error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── Deal registration approval ────────────────────────────────────────────────
+
+// PUT /api/admin/deals/:id/approve — approve a pending ('Registered') deal.
+router.put('/deals/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const dealId = req.params.id;
+    const dealResult = await pool.query('SELECT * FROM deals WHERE deal_id = $1', [dealId]);
+    if (dealResult.rows.length === 0) return res.status(404).json({ error: 'Deal not found' });
+
+    const deal = dealResult.rows[0];
+    if (deal.stage !== 'Registered') {
+      return res.status(400).json({ error: 'Only pending (Registered) deals can be approved' });
+    }
+
+    const result = await pool.query(
+      `UPDATE deals SET stage = 'Qualified', updated_at = NOW() WHERE deal_id = $1 RETURNING *`,
+      [dealId]
+    );
+    await recordStageChange(dealId, 'Registered', 'Qualified', { note: 'Registration approved', actor: req.user.name });
+    notifyPartner(deal.partner_id, {
+      title: `Deal approved: ${deal.company}`,
+      body: `${dealId} has been approved and is now Qualified.`,
+      link: `/leads/${dealId}`,
+    });
+
+    return res.json({ ...result.rows[0], annual_value: calcAnnualValue(result.rows[0].devices, result.rows[0].tier) });
+  } catch (err) {
+    console.error('Approve deal error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PUT /api/admin/deals/:id/reject — reject a pending deal (marks it Lost).
+router.put('/deals/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    const dealId = req.params.id;
+    const { reason } = req.body;
+    const dealResult = await pool.query('SELECT * FROM deals WHERE deal_id = $1', [dealId]);
+    if (dealResult.rows.length === 0) return res.status(404).json({ error: 'Deal not found' });
+
+    const deal = dealResult.rows[0];
+    if (deal.stage !== 'Registered') {
+      return res.status(400).json({ error: 'Only pending (Registered) deals can be rejected' });
+    }
+
+    const result = await pool.query(
+      `UPDATE deals SET stage = 'Lost', close_reason = $1, updated_at = NOW() WHERE deal_id = $2 RETURNING *`,
+      [reason || 'Registration rejected', dealId]
+    );
+    await recordStageChange(dealId, 'Registered', 'Lost', { reason: reason || 'Registration rejected', actor: req.user.name });
+    notifyPartner(deal.partner_id, {
+      title: `Deal not approved: ${deal.company}`,
+      body: `${dealId} was not approved.${reason ? ` Reason: ${reason}` : ''}`,
+      link: `/leads/${dealId}`,
+    });
+
+    return res.json({ ...result.rows[0], annual_value: calcAnnualValue(result.rows[0].devices, result.rows[0].tier) });
+  } catch (err) {
+    console.error('Reject deal error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── Collateral content management (admin CMS) ─────────────────────────────────
+
+// POST /api/admin/collaterals/folders
+router.post('/collaterals/folders', requireAdmin, async (req, res) => {
+  try {
+    const { name, sort_order } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Folder name is required' });
+    const result = await pool.query(
+      `INSERT INTO collateral_folders (name, sort_order) VALUES ($1, $2) RETURNING *`,
+      [name.trim(), Number.isInteger(sort_order) ? sort_order : 0]
+    );
+    return res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Create folder error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/admin/collaterals/folders/:id
+router.delete('/collaterals/folders/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await pool.query('DELETE FROM collateral_items WHERE folder_id = $1', [id]);
+    await pool.query('DELETE FROM collateral_folders WHERE id = $1', [id]);
+    return res.json({ message: 'Folder removed' });
+  } catch (err) {
+    console.error('Delete folder error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/admin/collaterals/items
+router.post('/collaterals/items', requireAdmin, async (req, res) => {
+  try {
+    const { folder_id, name, type, size, version, description, must_read, must_read_note } = req.body;
+    if (!folder_id || !name || !type) {
+      return res.status(400).json({ error: 'Folder, name, and type are required' });
+    }
+    const result = await pool.query(
+      `INSERT INTO collateral_items (folder_id, name, type, size, updated_label, version, description, must_read, must_read_note)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        parseInt(folder_id), name.trim(), String(type).toUpperCase(),
+        size || '—', 'Just now', version || '1.0', description || null,
+        !!must_read, must_read_note || null,
+      ]
+    );
+    return res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Create collateral item error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/admin/collaterals/items/:id
+router.delete('/collaterals/items/:id', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM collateral_items WHERE id = $1', [parseInt(req.params.id)]);
+    return res.json({ message: 'Collateral removed' });
+  } catch (err) {
+    console.error('Delete collateral item error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });

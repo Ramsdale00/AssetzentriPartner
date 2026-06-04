@@ -19,7 +19,7 @@ const EDITABLE_FIELDS = [
 const SELECT_COLUMNS = `
   id, name, tier, country, psm, joined_date,
   contact_name, contact_email, contact_phone,
-  logo_url, website, description, agreement_accepted_at, territory_plan
+  logo_url, website, description, agreement_accepted_at, territory_plan, knowledge_score
 `;
 
 // GET /api/profile — the current partner's company profile.
@@ -93,6 +93,33 @@ router.post('/accept-agreement', requireAuth, async (req, res) => {
     return res.json(result.rows[0]);
   } catch (err) {
     console.error('Accept agreement error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/profile/knowledge-check — record the partner's knowledge-check score.
+router.post('/knowledge-check', requireAuth, async (req, res) => {
+  const partnerId = req.user.partner_id;
+  if (!partnerId) return res.status(403).json({ error: 'No partner associated' });
+
+  const score = parseInt(req.body.score);
+  if (Number.isNaN(score) || score < 0 || score > 100) {
+    return res.status(400).json({ error: 'A score between 0 and 100 is required' });
+  }
+
+  try {
+    // Keep the best score achieved.
+    const result = await pool.query(
+      `UPDATE partners
+       SET knowledge_score = GREATEST(COALESCE(knowledge_score, 0), $1)
+       WHERE id = $2
+       RETURNING knowledge_score`,
+      [score, partnerId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Partner not found' });
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Knowledge check error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });

@@ -85,23 +85,30 @@ and its credentials can be changed via `DEMO_ADMIN_EMAIL` / `DEMO_ADMIN_PASSWORD
 
 ### Partner Portal
 - Dashboard with pipeline stats and onboarding progress
-- 8-step onboarding checklist
-- Lead/deal registration with duplicate detection
-- Deal detail view with stage tracker and comments
-- Product collateral browser with search and co-branded one-pager generator
-- Team management with invite and remove
+- 8-step onboarding checklist with a scored, persisted knowledge check
+- Lead/deal registration with duplicate detection (available during onboarding)
+- Deal detail view with stage tracker, **editing**, **win/loss reason capture**, and a **stage timeline**
+- Product collateral browser with search, **real PDF downloads**, and a **real co-branded one-pager generator** (server-rendered from your profile)
+- Team management with invite (sends a real invite email when configured) and remove
+- **Settings** page for editing your company profile any time
 
 ### Admin Portal
 - Operations overview with cross-partner stats and stage distribution chart
-- All deals table across all partners
+- All deals table with a **deal-registration approval workflow** (approve / reject pending deals)
 - Partners list with onboarding progress bars
 - Partner drilldown with deals, team, and onboarding detail
+- **Collateral CMS** to add/organise/remove sales materials for all partners
 
 ### Shared
 - Global search (Ctrl+K / Cmd+K) across deals and collaterals
-- JWT authentication with auto-redirect by persona
-- Toast notifications
-- Responsive layout
+- **In-app notifications** (bell with unread count) for approvals, stage changes, comments, and invites
+- JWT authentication with magic-link sign-in (verify password → emailed one-time link, with resend)
+- Toast notifications and a responsive layout
+- **Accessibility**: skip-to-content link, keyboard-operable rows, focus-trapped dialogs, ARIA labels, and breadcrumbs
+
+> Note: deal registrations now start as **Registered (pending approval)**; an admin approves them
+> into the pipeline. Collateral downloads and co-branded one-pagers are generated as real PDFs on
+> the fly (a production system would stream the stored asset instead).
 
 ## Security & Anti-Spam
 

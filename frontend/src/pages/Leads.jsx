@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { StagePill, TierPill } from '../components/Pill'
+import { rowActivation } from '../utils/a11y'
 
 function formatCurrency(val) {
   if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`
@@ -182,8 +183,6 @@ export default function Leads({ addToast, checklist }) {
         <button
           className="btn btn-primary"
           onClick={() => setShowModal(true)}
-          disabled={!onboardingComplete}
-          title={!onboardingComplete ? 'Complete onboarding to register leads' : ''}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Register Lead
@@ -192,7 +191,7 @@ export default function Leads({ addToast, checklist }) {
 
       {!onboardingComplete && (
         <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#C2410C', marginBottom: 16 }}>
-          Complete your onboarding checklist to unlock lead registration.
+          You can register deals now. Finish your <a href="/onboarding" style={{ color: '#9A3412', fontWeight: 600 }}>onboarding checklist</a> to unlock full partner benefits and deal protection.
         </div>
       )}
 
@@ -233,12 +232,19 @@ export default function Leads({ addToast, checklist }) {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--muted)', padding: 40 }}>No deals found</td></tr>
+                <tr><td colSpan={7} style={{ padding: 0 }}>
+                  <div className="empty-state">
+                    <p>{search || filter !== 'All' ? 'No deals match your filters.' : "You haven't registered any deals yet."}</p>
+                    {!search && filter === 'All' && (
+                      <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>Register your first lead</button>
+                    )}
+                  </div>
+                </td></tr>
               ) : filtered.map(deal => (
                 <tr
                   key={deal.id}
                   className="clickable"
-                  onClick={() => navigate(`/leads/${deal.deal_id}`)}
+                  {...rowActivation(() => navigate(`/leads/${deal.deal_id}`), `Open deal ${deal.deal_id} for ${deal.company}`)}
                 >
                   <td><span className="deal-id">{deal.deal_id}</span></td>
                   <td>

@@ -206,7 +206,7 @@ const DEFAULT_CHECKLIST_STEPS = [
   { num: 4, title: 'Add team members', desc: 'Invite your sales team to the partner portal so they can access resources and register deals.' },
   { num: 5, title: 'Watch product demo video', desc: 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.' },
   { num: 6, title: 'Download and review sales kit', desc: 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.' },
-  { num: 7, title: 'Pass partner knowledge check', desc: 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.' },
+  { num: 7, title: 'Pass partner knowledge check', desc: 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.' },
   { num: 8, title: 'Submit territory plan', desc: 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.' },
 ];
 

@@ -10,6 +10,7 @@ const collateralsRoutes = require('./routes/collaterals');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
 const profileRoutes = require('./routes/profile');
+const notificationsRoutes = require('./routes/notifications');
 const { ensureDemoAdmin } = require('./demoAdmin');
 const { ensureSchema } = require('./ensureSchema');
 
@@ -57,6 +58,7 @@ app.use('/api/collaterals', collateralsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // 404 handler
 app.use((req, res) => {

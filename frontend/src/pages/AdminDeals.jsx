@@ -14,6 +14,7 @@ export default function AdminDeals({ addToast }) {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState('All')
+  const [processing, setProcessing] = useState(null)
 
   useEffect(() => {
     client.get('/admin/deals')
@@ -22,7 +23,39 @@ export default function AdminDeals({ addToast }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const stages = ['All', 'Qualified', 'Demo', 'Proposal', 'Legal', 'Won', 'Lost']
+  const pendingCount = deals.filter((d) => d.stage === 'Registered').length
+
+  const applyResult = (updated) => setDeals((prev) => prev.map((d) => (d.deal_id === updated.deal_id ? { ...d, ...updated } : d)))
+
+  const approve = async (deal) => {
+    setProcessing(deal.deal_id)
+    try {
+      const res = await client.put(`/admin/deals/${deal.deal_id}/approve`)
+      applyResult(res.data)
+      addToast?.(`Approved ${deal.deal_id}`, 'success')
+    } catch (err) {
+      addToast?.(err.response?.data?.error || 'Failed to approve', 'error')
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const reject = async (deal) => {
+    const reason = window.prompt(`Reason for rejecting ${deal.deal_id} (optional):`, '')
+    if (reason === null) return
+    setProcessing(deal.deal_id)
+    try {
+      const res = await client.put(`/admin/deals/${deal.deal_id}/reject`, { reason })
+      applyResult(res.data)
+      addToast?.(`Rejected ${deal.deal_id}`, 'success')
+    } catch (err) {
+      addToast?.(err.response?.data?.error || 'Failed to reject', 'error')
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const stages = ['All', 'Registered', 'Qualified', 'Demo', 'Proposal', 'Legal', 'Won', 'Lost']
 
   const filtered = deals.filter(d => {
     const matchStage = stageFilter === 'All' || d.stage === stageFilter
@@ -39,6 +72,13 @@ export default function AdminDeals({ addToast }) {
         <h1 className="page-title">All Deals</h1>
         <p className="page-subtitle">Every registered deal across all partners.</p>
       </div>
+
+      {pendingCount > 0 && (
+        <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#C2410C', marginBottom: 16 }}>
+          <strong>{pendingCount}</strong> deal{pendingCount !== 1 ? 's' : ''} awaiting approval.{' '}
+          <button className="btn btn-ghost btn-sm" style={{ color: '#9A3412' }} onClick={() => setStageFilter('Registered')}>Review pending</button>
+        </div>
+      )}
 
       <div className="filter-bar">
         {stages.map(s => (
@@ -74,11 +114,12 @@ export default function AdminDeals({ addToast }) {
                 <th>Stage</th>
                 <th>Protection</th>
                 <th>ARR</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--muted)', padding: 40 }}>No deals found</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--muted)', padding: 40 }}>No deals found</td></tr>
               ) : filtered.map(deal => (
                 <tr key={deal.id}>
                   <td><span className="deal-id">{deal.deal_id}</span></td>
@@ -102,6 +143,16 @@ export default function AdminDeals({ addToast }) {
                     }
                   </td>
                   <td style={{ fontWeight: 500 }}>{formatCurrency(deal.annual_value)}</td>
+                  <td>
+                    {deal.stage === 'Registered' ? (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => approve(deal)} disabled={processing === deal.deal_id}>Approve</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => reject(deal)} disabled={processing === deal.deal_id}>Reject</button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: 'var(--muted)' }}>—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

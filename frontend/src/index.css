@@ -1546,3 +1546,161 @@ code, pre, .mono {
   .stat-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .two-col, .two-col-60-40 { grid-template-columns: 1fr; }
 }
+/* ─── Accessibility & UX additions ────────────────────────────────────────── */
+
+/* Skip link — visible only when focused */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 2000;
+  background: var(--teal);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Visible keyboard focus for interactive rows and buttons */
+.data-table tbody tr.clickable:focus-visible,
+.folder-item:focus-visible,
+.clickable-row:focus-visible,
+.notif-item:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: -2px;
+  background: rgba(15, 139, 139, 0.06);
+}
+.page-inner:focus { outline: none; }
+
+/* Registered (pending approval) stage pill */
+.pill-registered { background: #FEF9C3; color: #854D0E; }
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.breadcrumbs a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.breadcrumbs a:hover { color: var(--teal); text-decoration: underline; }
+.breadcrumb-item { display: inline-flex; align-items: center; gap: 6px; }
+.breadcrumb-item [aria-current="page"] { color: var(--ink); font-weight: 600; }
+.breadcrumb-sep { color: var(--cream-2); }
+
+/* Empty states */
+.empty-state {
+  text-align: center;
+  padding: 36px 20px;
+  color: var(--muted);
+}
+.empty-state p { margin: 0 0 14px; font-size: 14px; }
+
+/* Notification bell + panel */
+.notif-wrap { position: relative; }
+.notif-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.notif-btn:hover { background: var(--cream); }
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 100px;
+  background: var(--rust, #C2410C);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.notif-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 340px;
+  max-height: 440px;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.16);
+  z-index: 300;
+}
+.notif-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+}
+.notif-empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+.notif-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.notif-item:hover { background: var(--cream); }
+.notif-item.unread { background: rgba(15, 139, 139, 0.05); }
+.notif-item-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.notif-item-body { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.notif-item-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* Deal stage timeline */
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 0 0 16px 4px;
+  border-left: 2px solid var(--cream-2);
+  margin-left: 6px;
+  padding-left: 18px;
+}
+.timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+.timeline-dot {
+  position: absolute;
+  left: -7px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 2px solid var(--paper);
+}

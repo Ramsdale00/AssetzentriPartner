@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { TierPill } from '../components/Pill'
+import { rowActivation } from '../utils/a11y'
 
 function formatCurrency(val) {
   if (!val) return '$0'
@@ -224,7 +225,7 @@ export default function AdminPartners({ addToast }) {
                   ? Math.round((Number(p.onboarding_done) / Number(p.onboarding_total)) * 100)
                   : 0
                 return (
-                  <tr key={p.id} className="clickable" onClick={() => navigate(`/admin/partners/${p.id}`)}>
+                  <tr key={p.id} className="clickable" {...rowActivation(() => navigate(`/admin/partners/${p.id}`), `View partner ${p.name}`)}>
                     <td>
                       <div style={{ fontWeight: 500 }}>
                         {p.name}

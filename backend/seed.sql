@@ -55,7 +55,7 @@ INSERT INTO checklist_steps (partner_id, step_number, title, description, done) 
 ('p1', 4, 'Add team members', 'Invite your sales team to the partner portal so they can access resources and register deals.', TRUE),
 ('p1', 5, 'Watch product demo video', 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.', TRUE),
 ('p1', 6, 'Download and review sales kit', 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.', FALSE),
-('p1', 7, 'Pass partner knowledge check', 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
+('p1', 7, 'Pass partner knowledge check', 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
 ('p1', 8, 'Submit territory plan', 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.', FALSE);
 
 -- Checklist steps for p2 (8/8 done)
@@ -66,7 +66,7 @@ INSERT INTO checklist_steps (partner_id, step_number, title, description, done) 
 ('p2', 4, 'Add team members', 'Invite your sales team to the partner portal so they can access resources and register deals.', TRUE),
 ('p2', 5, 'Watch product demo video', 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.', TRUE),
 ('p2', 6, 'Download and review sales kit', 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.', TRUE),
-('p2', 7, 'Pass partner knowledge check', 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.', TRUE),
+('p2', 7, 'Pass partner knowledge check', 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.', TRUE),
 ('p2', 8, 'Submit territory plan', 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.', TRUE);
 
 -- Checklist steps for p3 (8/8 done)
@@ -77,7 +77,7 @@ INSERT INTO checklist_steps (partner_id, step_number, title, description, done) 
 ('p3', 4, 'Add team members', 'Invite your sales team to the partner portal so they can access resources and register deals.', TRUE),
 ('p3', 5, 'Watch product demo video', 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.', TRUE),
 ('p3', 6, 'Download and review sales kit', 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.', TRUE),
-('p3', 7, 'Pass partner knowledge check', 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.', TRUE),
+('p3', 7, 'Pass partner knowledge check', 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.', TRUE),
 ('p3', 8, 'Submit territory plan', 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.', TRUE);
 
 -- Checklist steps for p4 (6/8 done)
@@ -88,7 +88,7 @@ INSERT INTO checklist_steps (partner_id, step_number, title, description, done) 
 ('p4', 4, 'Add team members', 'Invite your sales team to the partner portal so they can access resources and register deals.', TRUE),
 ('p4', 5, 'Watch product demo video', 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.', TRUE),
 ('p4', 6, 'Download and review sales kit', 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.', TRUE),
-('p4', 7, 'Pass partner knowledge check', 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
+('p4', 7, 'Pass partner knowledge check', 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
 ('p4', 8, 'Submit territory plan', 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.', FALSE);
 
 -- Checklist steps for p5 (4/8 done)
@@ -99,7 +99,7 @@ INSERT INTO checklist_steps (partner_id, step_number, title, description, done) 
 ('p5', 4, 'Add team members', 'Invite your sales team to the partner portal so they can access resources and register deals.', TRUE),
 ('p5', 5, 'Watch product demo video', 'Complete the 45-minute AssetZentri platform walkthrough to understand core features and positioning.', FALSE),
 ('p5', 6, 'Download and review sales kit', 'Access the Sales Playbook, battlecards, and pricing guide from the Product Collaterals section.', FALSE),
-('p5', 7, 'Pass partner knowledge check', 'Complete the 20-question online assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
+('p5', 7, 'Pass partner knowledge check', 'Complete the online knowledge assessment to demonstrate platform knowledge. Minimum score: 80%.', FALSE),
 ('p5', 8, 'Submit territory plan', 'Submit your 90-day go-to-market plan including target verticals, pipeline targets, and key prospects.', FALSE);
 
 -- Team members for p1 (Northwave Technologies)

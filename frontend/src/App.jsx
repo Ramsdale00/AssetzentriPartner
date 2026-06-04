@@ -12,10 +12,12 @@ import Leads from './pages/Leads'
 import DealDetail from './pages/DealDetail'
 import Collateral from './pages/Collateral'
 import Team from './pages/Team'
+import Settings from './pages/Settings'
 import AdminOps from './pages/AdminOps'
 import AdminDeals from './pages/AdminDeals'
 import AdminPartners from './pages/AdminPartners'
 import AdminPartnerDetail from './pages/AdminPartnerDetail'
+import AdminCollaterals from './pages/AdminCollaterals'
 
 function ProtectedRoute({ children, requirePersona }) {
   const { user, loading } = useAuth()
@@ -74,6 +76,9 @@ function AppRoutes() {
       <Route path="/team" element={
         <ProtectedRoute requirePersona="partner"><Team /></ProtectedRoute>
       } />
+      <Route path="/settings" element={
+        <ProtectedRoute requirePersona="partner"><Settings /></ProtectedRoute>
+      } />
 
       {/* Admin routes */}
       <Route path="/admin" element={
@@ -87,6 +92,9 @@ function AppRoutes() {
       } />
       <Route path="/admin/partners/:id" element={
         <ProtectedRoute requirePersona="admin"><AdminPartnerDetail /></ProtectedRoute>
+      } />
+      <Route path="/admin/collaterals" element={
+        <ProtectedRoute requirePersona="admin"><AdminCollaterals /></ProtectedRoute>
       } />
 
       <Route path="*" element={<Navigate to="/" replace />} />

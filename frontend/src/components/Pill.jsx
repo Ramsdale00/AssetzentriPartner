@@ -1,6 +1,7 @@
 import React from 'react'
 
 const stageClasses = {
+  Registered: 'pill-registered',
   Qualified: 'pill-qualified',
   Demo: 'pill-demo',
   Proposal: 'pill-proposal',

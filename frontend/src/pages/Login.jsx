@@ -1,7 +1,9 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import Turnstile from '../components/Turnstile'
+
+const RESEND_SECONDS = 30
 
 export default function Login() {
   const navigate = useNavigate()
@@ -13,23 +15,52 @@ export default function Login() {
   const [loading, setLoading]   = useState(false)
   const [sent, setSent]         = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [resendIn, setResendIn] = useState(0)
 
   const handleToken = useCallback((t) => setTurnstileToken(t), [])
+
+  // Countdown for the "resend link" control on the confirmation screen.
+  useEffect(() => {
+    if (resendIn <= 0) return
+    const t = setTimeout(() => setResendIn((s) => s - 1), 1000)
+    return () => clearTimeout(t)
+  }, [resendIn])
+
+  const submitCredentials = async () => {
+    const result = await login(email, password, turnstileToken)
+    if (result.loggedIn) {
+      navigate(result.user.persona === 'admin' ? '/admin' : '/dashboard', { replace: true })
+      return true
+    }
+    return false
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const result = await login(email, password, turnstileToken)
-      if (result.loggedIn) {
-        // Direct login (demo admin) — skip the magic-link screen.
-        navigate(result.user.persona === 'admin' ? '/admin' : '/dashboard', { replace: true })
-        return
+      const direct = await submitCredentials()
+      if (!direct) {
+        setSent(true)
+        setResendIn(RESEND_SECONDS)
       }
-      setSent(true)
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    if (resendIn > 0 || loading) return
+    setLoading(true)
+    setError('')
+    try {
+      await submitCredentials()
+      setResendIn(RESEND_SECONDS)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not resend the link')
     } finally {
       setLoading(false)
     }
@@ -68,6 +99,8 @@ export default function Login() {
               Click it within 15 minutes to access your portal.
             </p>
 
+            {error && <div className="login-error" style={{ marginBottom: 16 }}>{error}</div>}
+
             <div style={{
               background: 'var(--surface-2, #fafaf8)',
               border: '1px solid var(--line, #e8e4dc)',
@@ -80,10 +113,18 @@ export default function Login() {
             }}>
               Didn't receive it? Check your spam folder, or{' '}
               <button
+                onClick={handleResend}
+                disabled={resendIn > 0 || loading}
+                style={{ background: 'none', border: 'none', padding: 0, color: resendIn > 0 ? 'var(--muted)' : 'var(--accent, #c9a96e)', cursor: resendIn > 0 ? 'default' : 'pointer', fontSize: 13, fontWeight: 500 }}
+              >
+                {loading ? 'sending…' : resendIn > 0 ? `resend in ${resendIn}s` : 'resend the link'}
+              </button>
+              {'. '}Or{' '}
+              <button
                 onClick={() => { setSent(false); setError('') }}
                 style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent, #c9a96e)', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}
               >
-                try again
+                use a different email
               </button>
               .
             </div>
@@ -120,7 +161,7 @@ export default function Login() {
 
         <div className="login-form">
           <h1 className="login-heading">Sign in.</h1>
-          <p className="login-sub">Enter your credentials — we'll email you a secure sign-in link.</p>
+          <p className="login-sub">Verify your password, then we'll email a one-time secure link to finish signing in.</p>
 
           {error && <div className="login-error">{error}</div>}
 

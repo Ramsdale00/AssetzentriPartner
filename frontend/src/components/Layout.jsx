@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import Toast from './Toast'
 import SearchModal from './SearchModal'
+import NotificationBell from './NotificationBell'
 import { useToast } from '../hooks/useToast'
 import { useAuth } from '../contexts/AuthContext'
 import client from '../api/client'
@@ -44,15 +45,17 @@ export default function Layout({ children }) {
 
   return (
     <ToastContext.Provider value={{ addToast }}>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <div className="app-layout">
         <Sidebar checklist={checklist} searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
 
         <div className="main-content">
-          {/* Top bar with search trigger */}
+          {/* Top bar with search trigger + notifications */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
+            gap: 12,
             padding: '12px 32px',
             borderBottom: '1px solid var(--line)',
             background: 'var(--paper)',
@@ -63,16 +66,18 @@ export default function Layout({ children }) {
             <button
               className="search-trigger"
               onClick={() => setSearchOpen(true)}
+              aria-label="Search deals and collaterals"
             >
               <SearchIcon />
               Search...
               <span className="kbd">⌘K</span>
             </button>
+            <NotificationBell />
           </div>
 
-          <div className="page-inner">
+          <main id="main-content" className="page-inner" tabIndex={-1}>
             {React.cloneElement(children, { addToast, checklist, setChecklist })}
-          </div>
+          </main>
         </div>
 
         {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}

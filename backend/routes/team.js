@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { sendMail } = require('../mailer');
+const { notifyPartner } = require('../notify');
+
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://partner.vistrivetech.com').replace(/\/$/, '');
 
 // GET /api/team
 router.get('/', requireAuth, async (req, res) => {
@@ -54,7 +58,24 @@ router.post('/', requireAuth, async (req, res) => {
       [partnerId, name.trim(), email.toLowerCase().trim(), role]
     );
 
-    return res.status(201).json(result.rows[0]);
+    const partnerResult = await pool.query('SELECT name FROM partners WHERE id = $1', [partnerId]);
+    const partnerName = partnerResult.rows[0]?.name || 'your partner organisation';
+
+    // Best-effort invite email (skipped gracefully if SendGrid isn't configured).
+    const emailSent = await sendMail({
+      to: email.toLowerCase().trim(),
+      subject: `You've been invited to the AssetZentri Partner Portal`,
+      text: `Hi ${name.trim()},\n\n${req.user.name} has invited you to join ${partnerName} on the AssetZentri Partner Portal as a ${role}.\n\nSign in to get started: ${FRONTEND_URL}/login\n\n— AssetZentri Partner Programme`,
+      html: `<p>Hi ${name.trim()},</p><p><strong>${req.user.name}</strong> has invited you to join <strong>${partnerName}</strong> on the AssetZentri Partner Portal as a <strong>${role}</strong>.</p><p><a href="${FRONTEND_URL}/login">Sign in to get started →</a></p><p>— AssetZentri Partner Programme</p>`,
+    });
+
+    notifyPartner(partnerId, {
+      title: `Team member invited`,
+      body: `${name.trim()} (${role}) was invited to the team.`,
+      link: '/team',
+    });
+
+    return res.status(201).json({ ...result.rows[0], email_sent: emailSent });
   } catch (err) {
     console.error('Invite team member error:', err);
     return res.status(500).json({ error: 'Server error' });

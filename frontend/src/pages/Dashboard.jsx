@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import StatCard from '../components/StatCard'
 import { StagePill } from '../components/Pill'
+import { rowActivation } from '../utils/a11y'
 
 function formatCurrency(val) {
   if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`
@@ -98,7 +99,7 @@ export default function Dashboard({ addToast, checklist }) {
                   <tr
                     key={deal.id}
                     className="clickable"
-                    onClick={() => navigate(`/leads/${deal.deal_id}`)}
+                    {...rowActivation(() => navigate(`/leads/${deal.deal_id}`), `Open deal ${deal.deal_id} for ${deal.company}`)}
                   >
                     <td>
                       <div style={{ fontWeight: 500 }}>{deal.company}</div>

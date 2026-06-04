@@ -274,6 +274,16 @@ const QUIZ = [
     options: ['30 days', '60 days', '90 days', 'Forever'],
     answer: 2,
   },
+  {
+    q: 'Which subscription tiers does AssetZentri offer?',
+    options: ['Free and Paid', 'Standard and Premium', 'Bronze and Gold', 'Basic and Pro'],
+    answer: 1,
+  },
+  {
+    q: 'After a partner registers a new deal, what happens next?',
+    options: ['It is instantly Won', 'It awaits approval by AssetZentri partner ops', 'It is deleted after 24 hours', 'Nothing — it stays hidden'],
+    answer: 1,
+  },
 ]
 
 function KnowledgeCheckBody({ markStep, step, addToast }) {
@@ -288,6 +298,8 @@ function KnowledgeCheckBody({ markStep, step, addToast }) {
       return
     }
     setSubmitting(true)
+    // Persist the score so partner ops can see knowledge-check completion.
+    await client.post('/profile/knowledge-check', { score: pct }).catch(() => {})
     await markStep(step, true)
     addToast?.(`Passed with ${pct}%!`, 'success')
     setSubmitting(false)
