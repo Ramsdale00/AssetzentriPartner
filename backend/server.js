@@ -9,7 +9,9 @@ const teamRoutes = require('./routes/team');
 const collateralsRoutes = require('./routes/collaterals');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
+const profileRoutes = require('./routes/profile');
 const { ensureDemoAdmin } = require('./demoAdmin');
+const { ensureSchema } = require('./ensureSchema');
 
 const app = express();
 
@@ -53,6 +55,7 @@ app.use('/api/team', teamRoutes);
 app.use('/api/collaterals', collateralsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/profile', profileRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -66,8 +69,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 6789;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`AssetZentri backend running on http://localhost:${PORT}`);
-  // Ensure the hardcoded demo partner admin exists (idempotent, non-fatal).
-  ensureDemoAdmin();
+  // Apply idempotent schema migrations, then ensure the hardcoded demo admin
+  // exists. Both are non-fatal so the server stays up even if they fail.
+  await ensureSchema();
+  await ensureDemoAdmin();
 });

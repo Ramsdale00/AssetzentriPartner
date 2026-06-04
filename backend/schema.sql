@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS partners (
   contact_name VARCHAR(255),
   contact_email VARCHAR(255),
   contact_phone VARCHAR(50),
+  logo_url TEXT,
+  website VARCHAR(255),
+  description TEXT,
+  agreement_accepted_at TIMESTAMPTZ,
+  territory_plan TEXT,
   is_custom BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
