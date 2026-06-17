@@ -119,8 +119,8 @@ export default function Login() {
         </div>
 
         <div className="login-form">
-          <h1 className="login-heading">Sign in.</h1>
-          <p className="login-sub">Enter your credentials — we'll email you a secure sign-in link.</p>
+          <h1 className="login-heading">Log in.</h1>
+          <p className="login-sub">Access your AssetZentri Partner Portal.</p>
 
           {error && <div className="login-error">{error}</div>}
 
@@ -156,12 +156,11 @@ export default function Login() {
               style={{ width: '100%', justifyContent: 'center', padding: '11px 20px', fontSize: 14, marginTop: 8 }}
               disabled={loading}
             >
-              {loading ? 'Sending link...' : 'Send sign-in link'}
+              {loading ? 'Logging in...' : 'Log in'}
             </button>
           </form>
 
           <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 20, textAlign: 'center' }}>
-            New to AssetZentri?{' '}
             <Link to="/signup" style={{ color: 'var(--accent, #c9a96e)', fontWeight: 500 }}>Create an account</Link>
           </p>
         </div>

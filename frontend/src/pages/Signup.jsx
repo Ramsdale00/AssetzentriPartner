@@ -118,7 +118,7 @@ export default function Signup() {
                 type="text"
                 value={form.name}
                 onChange={update('name')}
-                placeholder="Alex Morgan"
+                placeholder="Full name"
                 required
                 autoComplete="name"
               />
@@ -132,7 +132,7 @@ export default function Signup() {
                 onChange={handleCompanyChange}
                 onFocus={() => companySuggestions.length > 0 && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Northwave Technologies"
+                placeholder="Company legal name"
                 required
                 autoComplete="off"
               />
@@ -176,7 +176,7 @@ export default function Signup() {
                 type="text"
                 value={form.country}
                 onChange={update('country')}
-                placeholder="United Kingdom"
+                placeholder="Select country/region"
                 required
                 autoComplete="country-name"
               />
@@ -188,7 +188,7 @@ export default function Signup() {
                 type="email"
                 value={form.email}
                 onChange={update('email')}
-                placeholder="you@company.com"
+                placeholder="name@company.com"
                 required
                 autoComplete="email"
               />

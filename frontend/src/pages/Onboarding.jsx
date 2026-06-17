@@ -102,7 +102,7 @@ function LogoField({ value, onChange, addToast }) {
 }
 
 // ── Step 1: Company profile ───────────────────────────────────────────────────
-function CompanyProfileBody({ profile, saveProfile, step, addToast }) {
+function CompanyProfileBody({ profile, saveProfile, addToast }) {
   const [form, setForm] = useState({
     name: profile?.name || '',
     website: profile?.website || '',
@@ -118,8 +118,28 @@ function CompanyProfileBody({ profile, saveProfile, step, addToast }) {
 
   const submit = async (e) => {
     e.preventDefault()
+
+    const original = {
+      name: profile?.name || '',
+      website: profile?.website || '',
+      country: profile?.country || '',
+      contact_name: profile?.contact_name || '',
+      contact_email: profile?.contact_email || '',
+      contact_phone: profile?.contact_phone || '',
+      description: profile?.description || '',
+      logo_url: profile?.logo_url || '',
+    }
+
+    const hasChanges =
+      JSON.stringify(original) !== JSON.stringify(form)
+
+    if (!hasChanges) {
+      addToast?.('No changes detected.', 'info')
+      return
+    }
+
     setSaving(true)
-    await saveProfile(form, { completeStep: step })
+    await saveProfile(form)
     setSaving(false)
   }
 
@@ -149,14 +169,19 @@ function CompanyProfileBody({ profile, saveProfile, step, addToast }) {
 }
 
 // ── Step 2: Company logo ──────────────────────────────────────────────────────
-function LogoBody({ profile, saveProfile, step, addToast }) {
+function LogoBody({ profile, saveProfile, addToast }) {
   const [logoUrl, setLogoUrl] = useState(profile?.logo_url || '')
   const [saving, setSaving] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
+    const normalizedLogo = typeof logoUrl === 'string' ? logoUrl.trim() : ''
+    if (!normalizedLogo) {
+      addToast?.('Logo is required to complete this onboarding step.', 'error')
+      return
+    }
     setSaving(true)
-    await saveProfile({ logo_url: logoUrl }, { completeStep: logoUrl ? step : null })
+    await saveProfile({ logo_url: normalizedLogo })
     setSaving(false)
   }
 
@@ -226,6 +251,32 @@ function LinkOutBody({ text, cta, to, navigate, closeModal }) {
       </div>
       <div className="modal-footer">
         <button className="btn btn-primary" onClick={() => { closeModal(); navigate(to) }}>{cta}</button>
+      </div>
+    </>
+  )
+}
+
+function SalesKitBody({ markStep, step, navigate, closeModal }) {
+  return (
+    <>
+      <div className="modal-body">
+        <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, marginTop: 0 }}>
+          Review the Sales Playbook, battlecards, and pricing guide before marking this step complete.
+        </p>
+      </div>
+      <div className="modal-footer">
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            closeModal()
+            navigate('/collateral')
+          }}
+        >
+          Open Collaterals
+        </button>
+        <button className="btn btn-primary" onClick={() => markStep(step, true)} disabled={step.done}>
+          {step.done ? 'Marked reviewed' : "I've reviewed the sales kit"}
+        </button>
       </div>
     </>
   )
@@ -337,14 +388,19 @@ function KnowledgeCheckBody({ markStep, step, addToast }) {
 }
 
 // ── Step 8: territory plan ────────────────────────────────────────────────────
-function TerritoryPlanBody({ profile, saveProfile, step }) {
+function TerritoryPlanBody({ profile, saveProfile, addToast }) {
   const [plan, setPlan] = useState(profile?.territory_plan || '')
   const [saving, setSaving] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
+    const normalizedPlan = typeof plan === 'string' ? plan.trim() : ''
+    if (!normalizedPlan) {
+      addToast?.('Territory plan is required to complete this onboarding step.', 'error')
+      return
+    }
     setSaving(true)
-    await saveProfile({ territory_plan: plan }, { completeStep: plan.trim() ? step : null })
+    await saveProfile({ territory_plan: normalizedPlan })
     setSaving(false)
   }
 
@@ -373,14 +429,14 @@ function StepModal({ step, profile, saveProfile, acceptAgreement, markStep, addT
       return <div className="modal-body"><div className="loading-center"><div className="spinner" /></div></div>
     }
     switch (step.step_number) {
-      case 1: return <CompanyProfileBody profile={profile} saveProfile={saveProfile} step={step} addToast={addToast} />
-      case 2: return <LogoBody profile={profile} saveProfile={saveProfile} step={step} addToast={addToast} />
+      case 1: return <CompanyProfileBody profile={profile} saveProfile={saveProfile} addToast={addToast} />
+      case 2: return <LogoBody profile={profile} saveProfile={saveProfile} addToast={addToast} />
       case 3: return <AgreementBody profile={profile} acceptAgreement={acceptAgreement} />
       case 4: return <LinkOutBody text="Invite your sales team so they can register deals and access partner resources." cta="Go to Team" to="/team" navigate={navigate} closeModal={onClose} />
       case 5: return <VideoBody markStep={markStep} step={step} />
-      case 6: return <LinkOutBody text="Browse the Sales Playbook, battlecards, and pricing guide in Product Collaterals." cta="Open Collaterals" to="/collateral" navigate={navigate} closeModal={onClose} />
+      case 6: return <SalesKitBody markStep={markStep} step={step} navigate={navigate} closeModal={onClose} />
       case 7: return <KnowledgeCheckBody markStep={markStep} step={step} addToast={addToast} />
-      case 8: return <TerritoryPlanBody profile={profile} saveProfile={saveProfile} step={step} />
+      case 8: return <TerritoryPlanBody profile={profile} saveProfile={saveProfile} addToast={addToast} />
       default: return <div className="modal-body"><p style={{ color: 'var(--muted)' }}>{step.description}</p></div>
     }
   })()
@@ -403,15 +459,6 @@ function StepModal({ step, profile, saveProfile, acceptAgreement, markStep, addT
         )}
 
         {body}
-
-        <div style={{ padding: '0 24px 18px', display: 'flex', justifyContent: 'flex-start' }}>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => markStep(step, !step.done)}
-          >
-            {step.done ? 'Mark as not complete' : 'Mark as complete'}
-          </button>
-        </div>
       </div>
     </div>
   )
@@ -443,25 +490,30 @@ export default function Onboarding({ addToast, checklist: initialChecklist, setC
     }
   }, [initialChecklist])
 
+  const refreshChecklist = async () => {
+    const res = await client.get('/checklist')
+    setChecklist(res.data)
+    setParentChecklist?.(res.data)
+    return res.data
+  }
+
   const markStep = async (step, done) => {
     try {
       await client.put(`/checklist/${step.id}`, { done })
-      const updated = checklist.map((s) => (s.id === step.id ? { ...s, done } : s))
-      setChecklist(updated)
-      setParentChecklist?.(updated)
+      await refreshChecklist()
       addToast?.(done ? 'Step marked complete!' : 'Step marked incomplete', 'success')
     } catch (err) {
-      addToast?.('Failed to update step', 'error')
+      addToast?.(err.response?.data?.error || 'Failed to update step', 'error')
     }
   }
 
-  // Save partner profile fields; optionally mark a step complete on success.
-  const saveProfile = async (patch, { completeStep } = {}) => {
+  // Save partner profile fields and refresh criteria-based checklist status.
+  const saveProfile = async (patch) => {
     try {
       const res = await client.put('/profile', patch)
       setProfile(res.data)
+      await refreshChecklist()
       addToast?.('Saved', 'success')
-      if (completeStep && !completeStep.done) await markStep(completeStep, true)
       return true
     } catch (err) {
       addToast?.(err.response?.data?.error || 'Failed to save', 'error')
@@ -473,8 +525,7 @@ export default function Onboarding({ addToast, checklist: initialChecklist, setC
     try {
       const res = await client.post('/profile/accept-agreement')
       setProfile((p) => ({ ...(p || {}), agreement_accepted_at: res.data.agreement_accepted_at }))
-      const step = checklist.find((s) => s.step_number === 3)
-      if (step && !step.done) await markStep(step, true)
+      await refreshChecklist()
       addToast?.('Agreement accepted', 'success')
     } catch (err) {
       addToast?.('Failed to record acceptance', 'error')

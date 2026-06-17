@@ -88,11 +88,21 @@ function getInitials(name) {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
-export default function Team({ addToast }) {
+export default function Team({ addToast, setChecklist }) {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
   const [removing, setRemoving] = useState(null)
+
+  const refreshChecklist = async () => {
+    if (!setChecklist) return
+    try {
+      const res = await client.get('/checklist')
+      setChecklist(res.data)
+    } catch {
+      // Checklist refresh is best-effort here; team action already succeeded.
+    }
+  }
 
   useEffect(() => {
     client.get('/team')
@@ -104,6 +114,7 @@ export default function Team({ addToast }) {
   const handleInviteSuccess = (newMember) => {
     setMembers(prev => [...prev, newMember])
     setShowInvite(false)
+    refreshChecklist()
   }
 
   const handleRemove = async (member) => {
@@ -112,6 +123,7 @@ export default function Team({ addToast }) {
     try {
       await client.delete(`/team/${member.id}`)
       setMembers(prev => prev.filter(m => m.id !== member.id))
+      await refreshChecklist()
       addToast?.(`${member.name} removed from team`, 'success')
     } catch (err) {
       addToast?.(err.response?.data?.error || 'Failed to remove member', 'error')

@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS checklist_steps (
   title VARCHAR(255) NOT NULL,
   description TEXT,
   done BOOLEAN DEFAULT FALSE,
+  acknowledged_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(partner_id, step_number)
 );

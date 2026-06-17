@@ -12,6 +12,7 @@ const STATEMENTS = [
   `ALTER TABLE partners ADD COLUMN IF NOT EXISTS description TEXT`,
   `ALTER TABLE partners ADD COLUMN IF NOT EXISTS agreement_accepted_at TIMESTAMPTZ`,
   `ALTER TABLE partners ADD COLUMN IF NOT EXISTS territory_plan TEXT`,
+  `ALTER TABLE checklist_steps ADD COLUMN IF NOT EXISTS acknowledged_at TIMESTAMPTZ`,
 ];
 
 async function ensureSchema() {
